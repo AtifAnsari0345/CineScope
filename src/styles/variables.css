@@ -1,0 +1,24 @@
+:root {
+  --color-bg-primary: #0f0f0f;
+  --color-bg-secondary: #1a1a1a;
+  --color-accent: #6c5ce7;
+  --color-accent-hover: #a29bfe;
+  --color-success: #21b07a;
+
+  --font-heading: 'Playfair Display', serif;
+  --font-body: Inter, system-ui, -apple-system, sans-serif;
+  --font-accent: 'Bebas Neue', system-ui, sans-serif;
+
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-7: 56px;
+  --space-8: 64px;
+  --space-9: 72px;
+  --space-10: 80px;
+  --space-11: 88px;
+  --space-12: 96px;
+}

@@ -1,0 +1,26 @@
+html,
+body {
+  background-color: var(--color-bg-primary);
+  color: #ffffff;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+.font-accent {
+  font-family: var(--font-accent);
+}
+
+.container-8 {
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}

@@ -1,0 +1,21 @@
+@keyframes cs-fade-in {
+  0% { opacity: 0 }
+  100% { opacity: 1 }
+}
+
+.fade-in {
+  animation: cs-fade-in 0.5s ease-out both;
+}
+
+.hover-lift {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.smooth-transition {
+  transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, fill 200ms ease, stroke 200ms ease, transform 200ms ease, opacity 200ms ease;
+}

@@ -1,0 +1,348 @@
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import MovieCard from '../components/movie/MovieCard.jsx'
+import RatingStars from '../components/review/RatingStars.jsx'
+import { useWatchlist } from '../context/WatchlistContext.jsx'
+import { useAuth } from '../context/AuthContext'
+import { posterUrlFromPath } from '../lib/tmdb.js'
+
+function Profile() {
+  const { 
+    watchlist, 
+    removeFromWatchlist, 
+    favorites, 
+    toggleFavorite,
+    watched, 
+    userReviews, 
+    deleteReview 
+  } = useWatchlist()
+  const { user, updateUserProfile, logout } = useAuth()
+  
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    username: '',
+    bio: '',
+    avatarUrl: ''
+  })
+
+  useEffect(() => {
+    if (user) {
+      setEditForm({
+        username: user.name || '',
+        bio: user.bio || '',
+        avatarUrl: user.avatarUrl || ''
+      })
+    }
+  }, [user])
+
+  const handleAvatarUpload = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setEditForm({ ...editForm, avatarUrl: reader.result })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleRemovePhoto = () => {
+    setEditForm({ ...editForm, avatarUrl: null })
+  }
+
+  const avatarDisplay = editForm.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'User')}&backgroundType=gradientLinear`
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault()
+    const res = await updateUserProfile({
+      name: editForm.username,
+      bio: editForm.bio,
+      avatarUrl: editForm.avatarUrl
+    })
+    if (res.success) {
+      setIsEditing(false)
+    } else {
+      alert(res.message)
+    }
+  }
+
+  const userStats = {
+    watched: watched.length,
+    reviews: userReviews.length,
+    favorites: favorites.length
+  }
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  // Helper to map DB movie object to MovieCard expected format
+  const mapMovie = (m) => ({
+    id: m.movieId,
+    title: m.title,
+    poster_path: m.poster,
+    media_type: m.media_type,
+    year: m.year,
+    vote_average: m.rating * 2 // back to 10 scale
+  })
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <h1 className="font-heading text-3xl sm:text-4xl text-white mb-6">My Profile</h1>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-4">
+          <div className="rounded-xl border border-white/5 bg-background-secondary p-6 smooth-transition sticky top-24">
+            {isEditing ? (
+              <form onSubmit={handleProfileUpdate} className="space-y-4">
+                <div className="flex flex-col items-center gap-3 mb-4">
+                  <div className="relative group h-16 w-16">
+                    <img
+                      src={avatarDisplay}
+                      alt={editForm.username}
+                      className="h-16 w-16 rounded-full border-2 border-accent shadow-lg object-cover"
+                    />
+                    <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                      <span className="text-[10px] text-white font-bold uppercase">Change</span>
+                      <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                    </label>
+                    
+                    {editForm.avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={handleRemovePhoto}
+                        className="absolute -top-1 -right-1 z-10 h-6 w-6 rounded-full bg-background-secondary border border-white/10 flex items-center justify-center text-surface-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all shadow-lg"
+                        title="Remove Photo"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-surface-400 text-xs uppercase mb-1 font-semibold tracking-wider">Name</label>
+                  <input 
+                    type="text" 
+                    value={editForm.username}
+                    onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                    className="w-full bg-background-primary border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:ring-1 focus:ring-accent transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-surface-400 text-xs uppercase mb-1 font-semibold tracking-wider">Bio</label>
+                  <textarea 
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                    className="w-full bg-background-primary border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:ring-1 focus:ring-accent h-24 resize-none transition-all"
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button type="submit" className="flex-1 bg-accent hover:bg-accent-hover text-black font-bold py-2 rounded-lg text-sm smooth-transition">Save</button>
+                  <button type="button" onClick={() => setIsEditing(false)} className="flex-1 bg-surface-700 hover:bg-surface-600 text-white py-2 rounded-lg text-sm smooth-transition">Cancel</button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <img
+                      src={user?.avatarUrl || avatarDisplay}
+                      alt={user?.name}
+                      className="h-16 w-16 rounded-full border border-white/10 shadow-lg object-cover"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-white text-xl font-semibold">{user?.name}</div>
+                    <div className="text-surface-400 text-sm">Member</div>
+                  </div>
+                </div>
+                <p className="text-surface-300 mt-4 italic leading-relaxed">"{user?.bio}"</p>
+                <div className="flex flex-col gap-2 mt-6">
+                  <button 
+                    onClick={() => setIsEditing(true)}
+                    className="w-full border border-white/10 hover:bg-white/5 text-surface-300 py-2 rounded-lg text-sm transition-all font-medium"
+                  >
+                    Edit Profile
+                  </button>
+                  <button 
+                    onClick={logout}
+                    className="w-full border border-red-500/20 hover:bg-red-500/10 text-red-400 py-2 rounded-lg text-sm transition-all font-medium"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </>
+            )}
+
+            <div className="grid grid-cols-3 gap-3 mt-8 pt-6 border-t border-white/5">
+              <div className="rounded-lg border border-white/5 bg-background-primary p-3 text-center">
+                <div className="text-white text-lg font-semibold">{userStats.watched}</div>
+                <div className="text-surface-400 text-[10px] uppercase tracking-tighter font-medium">Watched</div>
+              </div>
+              <div className="rounded-lg border border-white/5 bg-background-primary p-3 text-center">
+                <div className="text-white text-lg font-semibold">{watchlist.length}</div>
+                <div className="text-surface-400 text-[10px] uppercase tracking-tighter font-medium">Watchlist</div>
+              </div>
+              <div className="rounded-lg border border-white/5 bg-background-primary p-3 text-center">
+                <div className="text-white text-lg font-semibold">{userStats.favorites}</div>
+                <div className="text-surface-400 text-[10px] uppercase tracking-tighter font-medium">Favorites</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-8 space-y-6">
+          {/* Favorites Preview */}
+          <div className="rounded-xl border border-white/5 bg-background-secondary p-6 smooth-transition">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-heading text-2xl text-white">My Favorites</h2>
+              <Link to="/favorites" className="text-accent text-sm hover:underline font-medium flex items-center gap-1">
+                See All 
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                </svg>
+              </Link>
+            </div>
+            {favorites.length === 0 ? (
+              <div className="text-surface-400 text-center py-10 bg-background-primary/20 rounded-xl border border-dashed border-white/5">
+                No favorites yet.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {favorites.slice(0, 4).map((movie) => (
+                  <MovieCard 
+                    key={movie.movieId} 
+                    movie={mapMovie(movie)} 
+                    onRemove={() => toggleFavorite(mapMovie(movie))}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Watched Preview */}
+          <div className="rounded-xl border border-white/5 bg-background-secondary p-6 smooth-transition">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-heading text-2xl text-white">Watched</h2>
+              <Link to="/watched" className="text-accent text-sm hover:underline font-medium flex items-center gap-1">
+                See All 
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                </svg>
+              </Link>
+            </div>
+            {watched.length === 0 ? (
+              <div className="text-surface-400 text-center py-10 bg-background-primary/20 rounded-xl border border-dashed border-white/5">
+                No watched items yet.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {watched.slice(0, 4).map((movie) => (
+                  <MovieCard 
+                    key={movie.movieId} 
+                    movie={mapMovie(movie)} 
+                    onRemove={() => {}} // Could add remove watched if needed
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Watchlist Preview */}
+          <div className="rounded-xl border border-white/5 bg-background-secondary p-6 smooth-transition">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-heading text-2xl text-white">Watchlist</h2>
+              <Link to="/watchlist" className="text-accent text-sm hover:underline font-medium flex items-center gap-1">
+                See All 
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                </svg>
+              </Link>
+            </div>
+            {watchlist.length === 0 ? (
+              <div className="text-surface-400 text-center py-10 bg-background-primary/20 rounded-xl border border-dashed border-white/5">
+                Watchlist is empty.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {watchlist.slice(0, 4).map((movie) => (
+                  <MovieCard 
+                    key={movie.movieId} 
+                    movie={mapMovie(movie)} 
+                    onRemove={() => removeFromWatchlist(movie.movieId)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Reviews Preview */}
+          <div className="rounded-xl border border-white/5 bg-background-secondary p-6 smooth-transition">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-heading text-2xl text-white">My Reviews</h2>
+              <Link to="/reviews" className="text-accent text-sm hover:underline font-medium flex items-center gap-1">
+                See All 
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                </svg>
+              </Link>
+            </div>
+            {userReviews.length === 0 ? (
+              <div className="text-surface-300 text-center py-12 bg-background-primary/30 rounded-2xl border border-dashed border-white/10">
+                You haven't written any reviews yet.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {userReviews.slice(0, 2).map((review) => (
+                  <div key={review._id} className="bg-background-primary p-4 rounded-xl border border-white/5 flex gap-4 group hover:border-white/10 transition-all">
+                    <div className="w-16 h-24 flex-shrink-0 rounded-lg overflow-hidden border border-white/5 shadow-lg">
+                      <img 
+                        src={posterUrlFromPath(review.moviePoster)} 
+                        alt={review.movieTitle} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <h3 className="text-white font-semibold text-base truncate">{review.movieTitle}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <RatingStars value={review.rating} readOnly size={12} />
+                            <span className="text-surface-500 text-[10px] uppercase tracking-wider">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => deleteReview(review._id)}
+                          className="text-surface-500 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-500/10 transition-all"
+                          title="Delete Review"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                          </svg>
+                        </button>
+                      </div>
+                      <p className="text-surface-300 text-xs mt-2 line-clamp-2 italic leading-relaxed">"{review.reviewText}"</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Profile
