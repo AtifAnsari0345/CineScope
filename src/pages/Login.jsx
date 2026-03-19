@@ -60,7 +60,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="w-full bg-background-primary border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-accent transition-all"
+              className="w-full bg-background-primary border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
               required
             />
           </div>
@@ -78,7 +78,7 @@ const Login = () => {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-accent hover:bg-accent-hover text-black font-bold py-4 rounded-xl smooth-transition shadow-lg shadow-accent/10 disabled:opacity-50"
+            className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-4 rounded-xl smooth-transition shadow-lg shadow-yellow-400/10 disabled:opacity-50"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
@@ -86,7 +86,7 @@ const Login = () => {
 
         <p className="mt-8 text-center text-surface-400 text-sm">
           Don't have an account? {' '}
-          <Link to="/signup" className="text-accent hover:underline font-medium">Sign Up</Link>
+          <Link to="/signup" className="text-yellow-400 hover:underline font-medium">Sign Up</Link>
         </p>
       </motion.div>
     </div>

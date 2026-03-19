@@ -12,7 +12,7 @@ import LoadingSkeleton from '../components/ui/LoadingSkeleton.jsx'
 import { useOnlineStatus } from '../hooks/useOnlineStatus'
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 function MovieDetails() {
   const { id } = useParams()
@@ -160,7 +160,7 @@ function MovieDetails() {
                 </div>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <motion.button
-                    className={`inline-flex items-center gap-2 rounded-md px-4 py-2 smooth-transition ${inWatchlist ? 'bg-surface-700 text-white cursor-default' : 'bg-accent hover:bg-accent-hover text-black font-semibold'}`}
+                    className={`inline-flex items-center gap-2 rounded-md px-4 py-2 smooth-transition ${inWatchlist ? 'bg-surface-700 text-white cursor-default' : 'bg-yellow-400 hover:bg-yellow-300 text-black font-semibold'}`}
                     onClick={() => {
                       if (!inWatchlist) addToWatchlist({ ...movie, media_type: mediaType })
                     }}
@@ -192,7 +192,7 @@ function MovieDetails() {
                     <svg viewBox="0 0 24 24" fill={isFavorite ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
-                    {isFavorite ? 'Favorite' : 'Add Favorite'}
+                    {isFavorite ? 'Favourite' : 'Add Favourite'}
                   </motion.button>
                 </div>
 
@@ -201,7 +201,7 @@ function MovieDetails() {
                   <p className="text-surface-300">{movie.overview}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {movie.genres?.map((g) => (
-                      <span key={g} className="text-xs px-2 py-1 rounded-full border border-white/10 text-surface-200 bg-background-secondary">
+                      <span key={g} className="text-xs px-2 py-1 rounded-full border border-yellow-400/50 text-yellow-400 bg-yellow-400/10">
                         {g}
                       </span>
                     ))}
@@ -249,13 +249,13 @@ function MovieDetails() {
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
                   placeholder="What did you think of this film?"
-                  className="w-full h-32 bg-background-primary text-white border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-accent focus:border-transparent outline-none resize-none transition-all"
+                  className="w-full h-32 bg-background-primary text-white border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none resize-none transition-all"
                   required
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-accent hover:bg-accent-hover text-black font-bold py-3 rounded-xl smooth-transition shadow-lg shadow-accent/10"
+                className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 rounded-xl smooth-transition shadow-lg shadow-yellow-400/10"
               >
                 Post Review
               </button>
@@ -278,7 +278,7 @@ function MovieDetails() {
                         {review.userAvatar ? (
                           <img src={review.userAvatar} alt={review.userName} className="w-10 h-10 rounded-full object-cover border border-white/10" />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold">
+                          <div className="w-10 h-10 rounded-full bg-yellow-400/20 flex items-center justify-center text-yellow-400 font-bold">
                             {getInitials(review.userName)}
                           </div>
                         )}

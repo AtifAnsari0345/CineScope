@@ -29,7 +29,7 @@ function RatingStars({ value = 0, max = 5, onChange, size = 18, readOnly = false
   }
 
   return (
-    <div className={`flex items-center gap-1 text-accent overflow-visible ${className}`} role="radiogroup" aria-label="Rating">
+    <div className={`flex items-center gap-1 text-yellow-400 overflow-visible ${className}`} role="radiogroup" aria-label="Rating">
       {Array.from({ length: max }).map((_, i) => {
         const isFilled = i < displayValue
         return (

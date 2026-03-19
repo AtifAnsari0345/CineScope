@@ -37,7 +37,7 @@ function App() {
         </motion.div>
         <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
           <motion.div 
-            className="h-full bg-accent"
+            className="h-full bg-yellow-400"
             initial={{ width: "0%" }}
             animate={{ width: "100%" }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}

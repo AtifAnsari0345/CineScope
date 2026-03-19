@@ -1,52 +1,39 @@
 import { useEffect, useState } from 'react'
 import PosterGrid from '../components/movie/PosterGrid.jsx'
 import MovieRow from '../components/movie/MovieRow.jsx'
-import ReviewCard from '../components/review/ReviewCard.jsx'
+import Footer from '../components/layout/Footer.jsx'
 import { motion } from 'framer-motion'
 import { getTrending, getPopular } from '../lib/tmdb.js'
-
-const trendingSeed = [
-  { id: 1, title: 'The Silent Echo', year: 2024, rating: 4, posterUrl: 'https://placehold.co/400x600/0f0f0f/6c5ce7?text=Silent+Echo' },
-  { id: 2, title: 'Neon Nights', year: 2023, rating: 5, posterUrl: 'https://placehold.co/400x600/1a1a1a/6c5ce7?text=Neon+Nights' },
-  { id: 3, title: 'Lunar Drift', year: 2022, rating: 3, posterUrl: 'https://placehold.co/400x600/0f0f0f/6c5ce7?text=Lunar+Drift' },
-  { id: 4, title: 'Glass Garden', year: 2021, rating: 4, posterUrl: 'https://placehold.co/400x600/1a1a1a/6c5ce7?text=Glass+Garden' },
-  { id: 5, title: 'Crimson Road', year: 2020, rating: 5, posterUrl: 'https://placehold.co/400x600/0f0f0f/6c5ce7?text=Crimson+Road' },
-  { id: 6, title: 'Arcade Dreams', year: 2019, rating: 4, posterUrl: 'https://placehold.co/400x600/1a1a1a/6c5ce7?text=Arcade+Dreams' },
-  { id: 7, title: 'Midnight Sun', year: 2018, rating: 3, posterUrl: 'https://placehold.co/400x600/0f0f0f/6c5ce7?text=Midnight+Sun' },
-  { id: 8, title: 'Iron Veil', year: 2017, rating: 4, posterUrl: 'https://placehold.co/400x600/1a1a1a/6c5ce7?text=Iron+Veil' },
-  { id: 9, title: 'Echo City', year: 2016, rating: 4, posterUrl: 'https://placehold.co/400x600/0f0f0f/6c5ce7?text=Echo+City' },
-  { id: 10, title: 'Blue Ember', year: 2015, rating: 5, posterUrl: 'https://placehold.co/400x600/1a1a1a/6c5ce7?text=Blue+Ember' },
-]
-
-const popularSeed = [
-  { id: 11, title: 'Golden Age', year: 2023, rating: 5, posterUrl: 'https://placehold.co/400x600/0f0f0f/6c5ce7?text=Golden+Age' },
-  { id: 12, title: 'Shadow Line', year: 2022, rating: 4, posterUrl: 'https://placehold.co/400x600/1a1a1a/6c5ce7?text=Shadow+Line' },
-  { id: 13, title: 'Digital Hearts', year: 2021, rating: 4, posterUrl: 'https://placehold.co/400x600/0f0f0f/6c5ce7?text=Digital+Hearts' },
-  { id: 14, title: 'Silver Wave', year: 2020, rating: 3, posterUrl: 'https://placehold.co/400x600/1a1a1a/6c5ce7?text=Silver+Wave' },
-  { id: 15, title: 'Obsidian Sky', year: 2019, rating: 5, posterUrl: 'https://placehold.co/400x600/0f0f0f/6c5ce7?text=Obsidian+Sky' },
-  { id: 16, title: 'Velvet Storm', year: 2018, rating: 4, posterUrl: 'https://placehold.co/400x600/1a1a1a/6c5ce7?text=Velvet+Storm' },
-]
-
-const reviews = [
-  { id: 'r1', username: 'Ava Chen', rating: 5, text: 'A stunning cinematic experience with breathtaking visuals.' },
-  { id: 'r2', username: 'Liam Patel', rating: 4, text: 'Strong performances and a gripping score elevate the plot.' },
-  { id: 'r3', username: 'Noah Kim', rating: 3, text: 'Predictable story, but the direction and pacing keep it engaging.' },
-]
+import LoadingSkeleton from '../components/ui/LoadingSkeleton.jsx'
+import { useAuth } from '../context/AuthContext'
 
 function Home() {
-  const [trending, setTrending] = useState(trendingSeed)
-  const [popular, setPopular] = useState(popularSeed)
+  const [trending, setTrending] = useState([])
+  const [popular, setPopular] = useState([])
+  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+
 
   useEffect(() => {
-    let alive = true
-    ;(async () => {
-      const [t, p] = await Promise.all([getTrending(), getPopular()])
-      if (!alive) return
-      if (Array.isArray(t) && t.length) setTrending(t.slice(0, 10))
-      if (Array.isArray(p) && p.length) setPopular(p.slice(0, 6))
-    })()
-    return () => { alive = false }
-  }, [])
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [t, p] = await Promise.all([getTrending(), getPopular()]);
+        setTrending(t || []);
+        setPopular(p || []);
+      } catch (error) {
+        console.error(error);
+        setTrending([]);
+        setPopular([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
 
   return (
     <div className="min-h-screen">
@@ -63,10 +50,10 @@ function Home() {
              }} />
         <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-10 text-center">
           <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-white">
-            Discover Your Next Favorite Film
+            Discover Your Next Favourite Film
           </h1>
           <p className="mt-3 text-surface-300 max-w-2xl mx-auto">
-            Browse trending titles, see what’s popular this week, and dive into reviews from the community.
+            Experience cinema like never before. Track your journey, discover trending masterpieces, and build your ultimate personal library.
           </p>
         </div>
       </motion.section>
@@ -79,7 +66,13 @@ function Home() {
         transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 }}
       >
         <h2 className="font-heading text-2xl text-white mb-4">Trending Movies</h2>
-        <PosterGrid movies={trending} />
+        {loading ? (
+          <LoadingSkeleton count={10} />
+        ) : trending.length > 0 ? (
+          <PosterGrid movies={trending} />
+        ) : (
+          <p className="text-center text-gray-400">No movies found</p>
+        )}
       </motion.section>
 
       <motion.section
@@ -89,25 +82,48 @@ function Home() {
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.3, ease: 'easeOut', delay: 0.1 }}
       >
-        <MovieRow title="Popular This Week" movies={popular} />
+        {loading ? (
+          <LoadingSkeleton count={6} />
+        ) : popular.length > 0 ? (
+          <MovieRow title="Popular This Week" movies={popular} />
+        ) : (
+          <p className="text-center text-gray-400">No movies found</p>
+        )}
       </motion.section>
 
       <motion.section
-        className="max-w-6xl mx-auto px-4 py-8"
+        className="max-w-6xl mx-auto px-4 py-16"
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
-        transition={{ duration: 0.3, ease: 'easeOut', delay: 0.15 }}
+        transition={{ duration: 0.4, ease: 'easeOut', delay: 0.15 }}
       >
-        <h2 className="font-heading text-2xl text-white mb-4">Latest Reviews</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {reviews.map((r) => (
-            <ReviewCard key={r.id} username={r.username} rating={r.rating} text={r.text} />
-          ))}
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-yellow-400/20 to-transparent border border-white/5 p-12 text-center group">
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+          <h2 className="relative font-heading text-4xl sm:text-5xl text-white mb-4">
+            Track Every Film.
+          </h2>
+          <p className="relative text-surface-300 max-w-xl mx-auto mb-10 text-lg leading-relaxed">
+            Create your personal watchlist, keep track of movies you've seen, and find your next favourite cinematic masterpiece.
+          </p>
+          {!user && (
+            <div className="relative flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link to="/signup" className="px-10 py-4 rounded-2xl bg-yellow-400 text-black font-black tracking-widest uppercase hover:bg-yellow-300 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-yellow-400/20">
+                Get Started
+              </Link>
+              <Link to="/login" className="px-10 py-4 rounded-2xl bg-white/5 text-white font-bold hover:bg-white/10 border border-white/10 transition-all backdrop-blur-md">
+                Sign In
+              </Link>
+            </div>
+          )}
         </div>
       </motion.section>
+
+      <Footer />
     </div>
   )
 }
+
+
 
 export default Home

@@ -81,7 +81,7 @@ function Search() {
                 <button
                   key={type}
                   onClick={() => setContentType(type)}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium smooth-transition ${contentType === type ? 'bg-accent text-black shadow-lg shadow-accent/20' : 'text-surface-400 hover:text-white'}`}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium smooth-transition ${contentType === type ? 'bg-yellow-400 text-black shadow-lg shadow-yellow-400/20' : 'text-surface-400 hover:text-white'}`}
                 >
                   {type === 'both' ? 'All' : type === 'movie' ? 'Movies' : 'TV Series'}
                 </button>
@@ -102,7 +102,7 @@ function Search() {
                 <button
                   key={option.value}
                   onClick={() => setSortBy(option.value)}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium smooth-transition ${sortBy === option.value ? 'bg-accent text-black shadow-lg shadow-accent/20' : 'text-surface-400 hover:text-white'}`}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium smooth-transition ${sortBy === option.value ? 'bg-yellow-400 text-black shadow-lg shadow-yellow-400/20' : 'text-surface-400 hover:text-white'}`}
                 >
                   {option.label}
                 </button>

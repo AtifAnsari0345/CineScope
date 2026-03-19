@@ -24,7 +24,6 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   bio: { type: String, default: 'Movie lover' },
-  avatarUrl: { type: String, default: null },
   watchlist: [movieSchema],
   favorites: [movieSchema],
   watched: [movieSchema],

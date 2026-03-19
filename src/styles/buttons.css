@@ -1,0 +1,56 @@
+/*
+ * ====================================================================
+ * CINESCOPE: BUTTON DESIGN SYSTEM
+ * ====================================================================
+ * This file establishes a comprehensive design system for all button
+ * components within the application. It uses CSS variables (design tokens)
+ * to ensure consistency, maintainability, and scalability.
+ */
+
+@layer base {
+  :root {
+    /* ----------------------------------------------------------------
+     * Design Tokens: Colors
+     * ---------------------------------------------------------------- */
+    --btn-primary-bg: #facc15; /* yellow-400 */
+    --btn-primary-text: #18181b; /* zinc-900 */
+    --btn-primary-hover-bg: #fde047; /* yellow-300 */
+    --btn-primary-shadow: rgba(250, 204, 21, 0.2);
+    --btn-primary-shadow-hover: rgba(250, 204, 21, 0.3);
+
+    --btn-secondary-bg: rgba(255, 255, 255, 0.05);
+    --btn-secondary-text: #f4f4f5; /* zinc-100 */
+    --btn-secondary-hover-bg: rgba(255, 255, 255, 0.1);
+    --btn-secondary-border: rgba(255, 255, 255, 0.1);
+
+    --btn-disabled-bg: rgba(113, 113, 122, 0.2); /* zinc-500/20 */
+    --btn-disabled-text: #71717a; /* zinc-500 */
+
+    /* ----------------------------------------------------------------
+     * Design Tokens: Typography
+     * ---------------------------------------------------------------- */
+    --btn-font-family: 'Bebas Neue', system-ui, sans-serif;
+    --btn-font-weight: 400;
+    --btn-letter-spacing-wide: 0.2em;
+    --btn-letter-spacing-normal: 0.1em;
+
+    /* ----------------------------------------------------------------
+     * Design Tokens: Sizing & Spacing
+     * ---------------------------------------------------------------- */
+    --btn-h-sm: 36px;
+    --btn-h-md: 44px;
+    --btn-h-lg: 52px;
+
+    --btn-px-sm: 16px;
+    --btn-px-md: 24px;
+    --btn-px-lg: 32px;
+
+    /* ----------------------------------------------------------------
+     * Design Tokens: Borders & Shadows
+     * ---------------------------------------------------------------- */
+    --btn-radius: 12px; /* 0.75rem */
+    --btn-focus-ring-color: #a78bfa; /* violet-400 */
+    --btn-focus-ring-width: 3px;
+    --btn-transition-duration: 250ms;
+  }
+}

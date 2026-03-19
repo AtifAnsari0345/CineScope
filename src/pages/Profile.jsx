@@ -21,43 +21,25 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({
     username: '',
-    bio: '',
-    avatarUrl: ''
+    bio: ''
   })
 
   useEffect(() => {
     if (user) {
       setEditForm({
         username: user.name || '',
-        bio: user.bio || '',
-        avatarUrl: user.avatarUrl || ''
+        bio: user.bio || ''
       })
     }
   }, [user])
 
-  const handleAvatarUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setEditForm({ ...editForm, avatarUrl: reader.result })
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleRemovePhoto = () => {
-    setEditForm({ ...editForm, avatarUrl: null })
-  }
-
-  const avatarDisplay = editForm.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'User')}&backgroundType=gradientLinear`
+  const avatarDisplay = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'User')}&backgroundType=gradientLinear`
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault()
     const res = await updateUserProfile({
       name: editForm.username,
-      bio: editForm.bio,
-      avatarUrl: editForm.avatarUrl
+      bio: editForm.bio
     })
     if (res.success) {
       setIsEditing(false)
@@ -99,31 +81,11 @@ function Profile() {
             {isEditing ? (
               <form onSubmit={handleProfileUpdate} className="space-y-4">
                 <div className="flex flex-col items-center gap-3 mb-4">
-                  <div className="relative group h-16 w-16">
-                    <img
-                      src={avatarDisplay}
-                      alt={editForm.username}
-                      className="h-16 w-16 rounded-full border-2 border-accent shadow-lg object-cover"
-                    />
-                    <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                      <span className="text-[10px] text-white font-bold uppercase">Change</span>
-                      <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-                    </label>
-                    
-                    {editForm.avatarUrl && (
-                      <button
-                        type="button"
-                        onClick={handleRemovePhoto}
-                        className="absolute -top-1 -right-1 z-10 h-6 w-6 rounded-full bg-background-secondary border border-white/10 flex items-center justify-center text-surface-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all shadow-lg"
-                        title="Remove Photo"
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                          <polyline points="3 6 5 6 21 6"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                      </button>
-                    )}
-                  </div>
+                  <img
+                    src={avatarDisplay}
+                    alt={editForm.username}
+                    className="h-16 w-16 rounded-full border-2 border-yellow-400 shadow-lg object-cover"
+                  />
                 </div>
                 <div>
                   <label className="block text-surface-400 text-xs uppercase mb-1 font-semibold tracking-wider">Name</label>
@@ -131,7 +93,7 @@ function Profile() {
                     type="text" 
                     value={editForm.username}
                     onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
-                    className="w-full bg-background-primary border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:ring-1 focus:ring-accent transition-all"
+                    className="w-full bg-background-primary border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:ring-1 focus:ring-yellow-400 transition-all"
                   />
                 </div>
                 <div>
@@ -143,7 +105,7 @@ function Profile() {
                   />
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <button type="submit" className="flex-1 bg-accent hover:bg-accent-hover text-black font-bold py-2 rounded-lg text-sm smooth-transition">Save</button>
+                  <button type="submit" className="flex-1 bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 rounded-lg text-sm smooth-transition">Save</button>
                   <button type="button" onClick={() => setIsEditing(false)} className="flex-1 bg-surface-700 hover:bg-surface-600 text-white py-2 rounded-lg text-sm smooth-transition">Cancel</button>
                 </div>
               </form>
@@ -152,7 +114,7 @@ function Profile() {
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <img
-                      src={user?.avatarUrl || avatarDisplay}
+                      src={avatarDisplay}
                       alt={user?.name}
                       className="h-16 w-16 rounded-full border border-white/10 shadow-lg object-cover"
                     />
@@ -191,7 +153,7 @@ function Profile() {
               </div>
               <div className="rounded-lg border border-white/5 bg-background-primary p-3 text-center">
                 <div className="text-white text-lg font-semibold">{userStats.favorites}</div>
-                <div className="text-surface-400 text-[10px] uppercase tracking-tighter font-medium">Favorites</div>
+                <div className="text-surface-400 text-[10px] uppercase tracking-tighter font-medium">Favourites</div>
               </div>
             </div>
           </div>
@@ -201,8 +163,8 @@ function Profile() {
           {/* Favorites Preview */}
           <div className="rounded-xl border border-white/5 bg-background-secondary p-6 smooth-transition">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-heading text-2xl text-white">My Favorites</h2>
-              <Link to="/favorites" className="text-accent text-sm hover:underline font-medium flex items-center gap-1">
+              <h2 className="font-heading text-2xl text-white">My Favourites</h2>
+              <Link to="/favorites" className="text-yellow-400 text-sm hover:underline font-medium flex items-center gap-1">
                 See All 
                 <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                   <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
@@ -211,7 +173,7 @@ function Profile() {
             </div>
             {favorites.length === 0 ? (
               <div className="text-surface-400 text-center py-10 bg-background-primary/20 rounded-xl border border-dashed border-white/5">
-                No favorites yet.
+                No favourites yet.
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -230,7 +192,7 @@ function Profile() {
           <div className="rounded-xl border border-white/5 bg-background-secondary p-6 smooth-transition">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-heading text-2xl text-white">Watched</h2>
-              <Link to="/watched" className="text-accent text-sm hover:underline font-medium flex items-center gap-1">
+              <Link to="/watched" className="text-yellow-400 text-sm hover:underline font-medium flex items-center gap-1">
                 See All 
                 <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                   <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
@@ -258,7 +220,7 @@ function Profile() {
           <div className="rounded-xl border border-white/5 bg-background-secondary p-6 smooth-transition">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-heading text-2xl text-white">Watchlist</h2>
-              <Link to="/watchlist" className="text-accent text-sm hover:underline font-medium flex items-center gap-1">
+              <Link to="/watchlist" className="text-yellow-400 text-sm hover:underline font-medium flex items-center gap-1">
                 See All 
                 <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                   <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
@@ -286,7 +248,7 @@ function Profile() {
           <div className="rounded-xl border border-white/5 bg-background-secondary p-6 smooth-transition">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-heading text-2xl text-white">My Reviews</h2>
-              <Link to="/reviews" className="text-accent text-sm hover:underline font-medium flex items-center gap-1">
+              <Link to="/reviews" className="text-yellow-400 text-sm hover:underline font-medium flex items-center gap-1">
                 See All 
                 <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                   <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />

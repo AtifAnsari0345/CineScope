@@ -65,7 +65,7 @@ const Signup = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter your name"
-              className="w-full bg-background-primary border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-accent transition-all"
+              className="w-full bg-background-primary border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
               required
             />
           </div>
@@ -76,7 +76,7 @@ const Signup = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="w-full bg-background-primary border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-accent transition-all"
+              className="w-full bg-background-primary border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
               required
             />
           </div>
@@ -87,7 +87,7 @@ const Signup = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full bg-background-primary border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-accent transition-all"
+              className="w-full bg-background-primary border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
               required
             />
           </div>
@@ -105,7 +105,7 @@ const Signup = () => {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-accent hover:bg-accent-hover text-black font-bold py-4 rounded-xl smooth-transition shadow-lg shadow-accent/10 disabled:opacity-50"
+            className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-4 rounded-xl smooth-transition shadow-lg shadow-yellow-400/10 disabled:opacity-50"
           >
             {loading ? 'Creating account...' : 'Sign Up'}
           </button>
@@ -113,7 +113,7 @@ const Signup = () => {
 
         <p className="mt-8 text-center text-surface-400 text-sm">
           Already have an account? {' '}
-          <Link to="/login" className="text-accent hover:underline font-medium">Login</Link>
+          <Link to="/login" className="text-yellow-400 hover:underline font-medium">Login</Link>
         </p>
       </motion.div>
     </div>

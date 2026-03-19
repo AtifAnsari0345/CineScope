@@ -15,7 +15,7 @@ function SearchBar({ placeholder = 'Search movies…', onSubmit, defaultValue = 
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
-        className="smooth-transition w-full rounded-md bg-background-secondary text-white placeholder-surface-500 border border-white/10 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent px-4 py-2"
+        className="smooth-transition w-full rounded-md bg-background-secondary text-white placeholder-surface-500 border border-white/10 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 px-4 py-2"
       />
     </form>
   )

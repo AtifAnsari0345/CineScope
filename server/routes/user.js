@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const User = require('../models/User');
+const Review = require('../models/Review');
 
 // Get user profile and data
 router.get('/profile', auth, async (req, res) => {
@@ -20,14 +21,13 @@ router.get('/profile', auth, async (req, res) => {
 // Update user profile
 router.put('/profile', auth, async (req, res) => {
   try {
-    const { name, bio, avatarUrl } = req.body;
+    const { name, bio } = req.body;
     const user = await User.findById(req.userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
     if (name) user.name = name;
     if (bio !== undefined) user.bio = bio;
-    if (avatarUrl !== undefined) user.avatarUrl = avatarUrl;
     await user.save();
     res.json(user);
   } catch (error) {
@@ -146,6 +146,18 @@ router.post('/review/add', auth, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
+    const newReview = new Review({
+      userId: user._id,
+      username: user.name,
+      movieId,
+      movieTitle,
+      moviePoster,
+      reviewText,
+      rating,
+      createdAt: new Date()
+    });
+    await newReview.save();
+
     user.reviews.push({ movieId, movieTitle, moviePoster, reviewText, rating, createdAt: new Date() });
     await user.save();
     res.json(user.reviews);
@@ -166,8 +178,7 @@ router.get('/reviews/:movieId', async (req, res) => {
         if (r.movieId === req.params.movieId) {
           movieReviews.push({
             ...r.toObject(),
-            userName: u.name,
-            userAvatar: u.avatarUrl
+            userName: u.name
           });
         }
       });

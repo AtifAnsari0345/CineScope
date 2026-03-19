@@ -15,7 +15,7 @@ function MovieCard({ movie, onRemove, className = '' }) {
     >
       {/* Media Type Badge */}
       {media_type && (
-        <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded bg-black/70 backdrop-blur-sm border border-white/10 text-[10px] uppercase font-bold text-accent tracking-wider">
+        <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded bg-black/70 backdrop-blur-sm border border-white/10 text-[10px] uppercase font-bold text-yellow-400 tracking-wider">
           {media_type === 'movie' ? 'Movie' : 'TV Series'}
         </div>
       )}
@@ -46,7 +46,7 @@ function MovieCard({ movie, onRemove, className = '' }) {
           </div>
         </Link>
         <div className="p-4 flex flex-col flex-grow justify-between">
-          <h3 className="text-white font-semibold text-base break-words mb-2" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          <h3 className="text-white font-semibold text-base break-words mb-2 h-12" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
             <Link to={`/movie/${movie?.id}?type=${media_type || 'movie'}`} className="hover:underline">
               {title}
             </Link>
