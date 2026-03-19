@@ -44,7 +44,7 @@ router.post('/watchlist/add', auth, async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
     // Check if already in watchlist
-    const exists = user.watchlist.some(m => m.movieId === movieId);
+    const exists = user.watchlist.some(m => String(m.movieId) === String(movieId));
     if (exists) return res.status(400).json({ message: 'Already in watchlist.' });
 
     user.watchlist.push({ movieId, title, poster, media_type, year, rating });
@@ -62,7 +62,7 @@ router.delete('/watchlist/remove/:movieId', auth, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    user.watchlist = user.watchlist.filter(m => m.movieId !== req.params.movieId);
+    user.watchlist = user.watchlist.filter(m => String(m.movieId) !== String(req.params.movieId));
     await user.save();
     res.json(user.watchlist);
   } catch (error) {
@@ -78,7 +78,7 @@ router.post('/favorites/add', auth, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    const exists = user.favorites.some(m => m.movieId === movieId);
+    const exists = user.favorites.some(m => String(m.movieId) === String(movieId));
     if (exists) return res.status(400).json({ message: 'Already in favorites.' });
 
     user.favorites.push({ movieId, title, poster, media_type, year, rating });
@@ -96,7 +96,7 @@ router.delete('/favorites/remove/:movieId', auth, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    user.favorites = user.favorites.filter(m => m.movieId !== req.params.movieId);
+    user.favorites = user.favorites.filter(m => String(m.movieId) !== String(req.params.movieId));
     await user.save();
     res.json(user.favorites);
   } catch (error) {
@@ -112,7 +112,7 @@ router.post('/watched/add', auth, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    const exists = user.watched.some(m => m.movieId === movieId);
+    const exists = user.watched.some(m => String(m.movieId) === String(movieId));
     if (exists) return res.status(400).json({ message: 'Already marked as watched.' });
 
     user.watched.push({ movieId, title, poster, media_type, year, rating });
@@ -130,7 +130,7 @@ router.delete('/watched/remove/:movieId', auth, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    user.watched = user.watched.filter(m => m.movieId !== req.params.movieId);
+    user.watched = user.watched.filter(m => String(m.movieId) !== String(req.params.movieId));
     await user.save();
     res.json(user.watched);
   } catch (error) {

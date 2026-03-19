@@ -18,6 +18,8 @@ export const WatchlistProvider = ({ children }) => {
   
   const { user, token } = useAuth();
 
+  const toId = (value) => String(value);
+
   useEffect(() => {
     if (user && token) {
       fetchUserData();
@@ -48,6 +50,8 @@ export const WatchlistProvider = ({ children }) => {
 
   const addToWatchlist = async (movie) => {
     if (!user) return;
+    const exists = watchlist.some(m => toId(m.movieId) === toId(movie?.id));
+    if (exists) return;
     try {
       const res = await axios.post(`${API_URL}/user/watchlist/add`, {
         movieId: movie.id,
@@ -77,9 +81,26 @@ export const WatchlistProvider = ({ children }) => {
     }
   };
 
+  const removeMultipleFromWatchlist = async (movieIds = []) => {
+    if (!user || movieIds.length === 0) return;
+    try {
+      await Promise.all(
+        movieIds.map((movieId) =>
+          axios.delete(`${API_URL}/user/watchlist/remove/${movieId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        )
+      );
+      const idSet = new Set(movieIds.map(toId));
+      setWatchlist((prev) => prev.filter((m) => !idSet.has(toId(m.movieId))));
+    } catch (error) {
+      console.error('Error removing from watchlist:', error);
+    }
+  };
+
   const toggleFavorite = async (movie) => {
     if (!user) return;
-    const isFav = favorites.some(m => String(m.movieId) === String(movie.id));
+    const isFav = favorites.some(m => toId(m.movieId) === toId(movie?.id));
     try {
       if (isFav) {
         const res = await axios.delete(`${API_URL}/user/favorites/remove/${movie.id}`, {
@@ -104,8 +125,27 @@ export const WatchlistProvider = ({ children }) => {
     }
   };
 
+  const removeMultipleFromFavorites = async (movieIds = []) => {
+    if (!user || movieIds.length === 0) return;
+    try {
+      await Promise.all(
+        movieIds.map((movieId) =>
+          axios.delete(`${API_URL}/user/favorites/remove/${movieId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        )
+      );
+      const idSet = new Set(movieIds.map(toId));
+      setFavorites((prev) => prev.filter((m) => !idSet.has(toId(m.movieId))));
+    } catch (error) {
+      console.error('Error removing from favorites:', error);
+    }
+  };
+
   const addToWatched = async (movie) => {
     if (!user) return;
+    const exists = watched.some(m => toId(m.movieId) === toId(movie?.id));
+    if (exists) return;
     try {
       const res = await axios.post(`${API_URL}/user/watched/add`, {
         movieId: movie.id,
@@ -120,6 +160,35 @@ export const WatchlistProvider = ({ children }) => {
       setWatched(res.data);
     } catch (error) {
       console.error('Error adding to watched:', error);
+    }
+  };
+
+  const removeFromWatched = async (movieId) => {
+    if (!user) return;
+    try {
+      const res = await axios.delete(`${API_URL}/user/watched/remove/${movieId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setWatched(res.data);
+    } catch (error) {
+      console.error('Error removing from watched:', error);
+    }
+  };
+
+  const removeMultipleFromWatched = async (movieIds = []) => {
+    if (!user || movieIds.length === 0) return;
+    try {
+      await Promise.all(
+        movieIds.map((movieId) =>
+          axios.delete(`${API_URL}/user/watched/remove/${movieId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        )
+      );
+      const idSet = new Set(movieIds.map(toId));
+      setWatched((prev) => prev.filter((m) => !idSet.has(toId(m.movieId))));
+    } catch (error) {
+      console.error('Error removing from watched:', error);
     }
   };
 
@@ -158,8 +227,12 @@ export const WatchlistProvider = ({ children }) => {
       loading,
       addToWatchlist, 
       removeFromWatchlist,
+      removeMultipleFromWatchlist,
       toggleFavorite,
+      removeMultipleFromFavorites,
       addToWatched,
+      removeFromWatched,
+      removeMultipleFromWatched,
       addReview,
       deleteReview
     }}>
