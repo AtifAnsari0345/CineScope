@@ -25,10 +25,16 @@ function Search() {
     if (loading && query.trim()) {
       const t = setTimeout(() => {
         ;(async () => {
-          const apiResults = await searchMulti(query.trim())
-          const filteredResults = apiResults?.filter(m => m.title && m.poster_path) || []
-          setResults(filteredResults)
-          setLoading(false)
+          try {
+            const apiResults = await searchMulti(query.trim())
+            const filteredResults = apiResults?.filter(m => m?.title && m?.poster_path) || []
+            setResults(filteredResults)
+          } catch (err) {
+            console.error('API Error:', err)
+            setResults([])
+          } finally {
+            setLoading(false)
+          }
         })()
       }, 500)
       return () => clearTimeout(t)

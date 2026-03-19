@@ -4,14 +4,14 @@ import { useWatchlist } from '../context/WatchlistContext.jsx'
 function Watchlist() {
   const { watchlist, removeFromWatchlist } = useWatchlist()
 
-  const mappedWatchlist = watchlist.map(m => ({
+  const mappedWatchlist = watchlist?.map(m => ({
     id: m.movieId,
     title: m.title,
     poster_path: m.poster,
     media_type: m.media_type,
     year: m.year,
     vote_average: m.rating * 2
-  }))
+  })) || []
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -19,7 +19,7 @@ function Watchlist() {
         <h1 className="font-heading text-3xl sm:text-4xl text-white">My Watchlist</h1>
       </div>
 
-      {watchlist.length === 0 ? (
+      {watchlist?.length === 0 ? (
         <div className="text-center text-surface-300 py-16">
           <p>No movies in your watchlist yet.</p>
         </div>
@@ -31,4 +31,3 @@ function Watchlist() {
 }
 
 export default Watchlist
-

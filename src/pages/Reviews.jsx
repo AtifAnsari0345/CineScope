@@ -8,13 +8,13 @@ function Reviews() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="font-heading text-3xl sm:text-4xl text-white mb-8">My Reviews</h1>
-      {userReviews.length === 0 ? (
+      {userReviews?.length === 0 ? (
         <div className="text-center py-20 bg-background-secondary/30 rounded-2xl border border-dashed border-white/10 text-surface-400 italic">
           No reviews yet.
         </div>
       ) : (
         <div className="grid gap-6">
-          {userReviews.map((review) => (
+          {userReviews?.map((review) => (
             <div key={review._id} className="bg-background-secondary p-6 rounded-2xl border border-white/5 flex gap-6 group hover:border-white/10 transition-all">
               <div className="w-24 h-36 flex-shrink-0 rounded-xl overflow-hidden border border-white/5 shadow-xl">
                 <img 

@@ -7,6 +7,7 @@ const WatchlistContext = createContext();
 export const useWatchlist = () => useContext(WatchlistContext);
 
 const API_URL = import.meta.env.VITE_API_URL;
+console.log('API URL:', API_URL);
 
 export const WatchlistProvider = ({ children }) => {
   const [watchlist, setWatchlist] = useState([]);

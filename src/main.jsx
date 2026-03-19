@@ -6,6 +6,10 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { WatchlistProvider } from './context/WatchlistContext.jsx'
 import { BrowserRouter as Router } from 'react-router-dom'
 
+window.onerror = function (msg, url, line, col, error) {
+  console.error('Global Error:', msg, error)
+}
+
 // Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

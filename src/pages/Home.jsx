@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { getTrending, getPopular } from '../lib/tmdb.js'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton.jsx'
 import { useAuth } from '../context/AuthContext'
+import { Link } from 'react-router-dom'
 
 function Home() {
   const [trending, setTrending] = useState([])
@@ -68,7 +69,7 @@ function Home() {
         <h2 className="font-heading text-2xl text-white mb-4">Trending Movies</h2>
         {loading ? (
           <LoadingSkeleton count={10} />
-        ) : trending.length > 0 ? (
+        ) : trending?.length > 0 ? (
           <PosterGrid movies={trending} />
         ) : (
           <p className="text-center text-gray-400">No movies found</p>
@@ -84,7 +85,7 @@ function Home() {
       >
         {loading ? (
           <LoadingSkeleton count={6} />
-        ) : popular.length > 0 ? (
+        ) : popular?.length > 0 ? (
           <MovieRow title="Popular This Week" movies={popular} />
         ) : (
           <p className="text-center text-gray-400">No movies found</p>

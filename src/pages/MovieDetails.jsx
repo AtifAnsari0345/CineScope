@@ -13,6 +13,7 @@ import { useOnlineStatus } from '../hooks/useOnlineStatus'
 import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL;
+console.log('API URL:', API_URL);
 
 function MovieDetails() {
   const { id } = useParams()
@@ -47,17 +48,26 @@ function MovieDetails() {
   useEffect(() => {
     let alive = true
     ;(async () => {
-      setLoading(true)
-      const [data, pop, trailer] = await Promise.all([
-        getDetails(movieId, mediaType),
-        getPopular(),
-        getTrailer(movieId, mediaType),
-      ])
-      if (!alive) return
-      if (data) setMovie(data)
-      if (Array.isArray(pop)) setRelated(pop.slice(0, 8))
-      setTrailerUrl(trailer)
-      setLoading(false)
+      try {
+        setLoading(true)
+        const [data, pop, trailer] = await Promise.all([
+          getDetails(movieId, mediaType),
+          getPopular(),
+          getTrailer(movieId, mediaType),
+        ])
+        if (!alive) return
+        if (data) setMovie(data)
+        if (Array.isArray(pop)) setRelated(pop.slice(0, 8))
+        setTrailerUrl(trailer)
+      } catch (err) {
+        console.error('API Error:', err)
+        if (!alive) return
+        setMovie(null)
+        setRelated([])
+        setTrailerUrl(null)
+      } finally {
+        if (alive) setLoading(false)
+      }
     })()
 
     fetchMovieReviews()
@@ -66,11 +76,16 @@ function MovieDetails() {
   }, [movieId, mediaType])
 
   const fetchMovieReviews = async () => {
+    if (!API_URL) {
+      setMovieReviews([]);
+      return;
+    }
     try {
       const res = await axios.get(`${API_URL}/user/reviews/${movieId}`);
-      setMovieReviews(res.data);
+      setMovieReviews(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error('Error fetching reviews:', error);
+      setMovieReviews([]);
     }
   };
 
@@ -266,12 +281,12 @@ function MovieDetails() {
           <div className="lg:col-span-7">
             <h2 className="font-heading text-2xl text-white mb-6">User Reviews</h2>
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-              {movieReviews.length === 0 ? (
+              {movieReviews?.length === 0 ? (
                 <div className="text-center py-12 bg-background-secondary/30 rounded-2xl border border-dashed border-white/10">
                   <p className="text-surface-400 italic">No reviews yet. Be the first to share your thoughts!</p>
                 </div>
               ) : (
-                movieReviews.map((review) => (
+                movieReviews?.map((review) => (
                   <div key={review._id} className="bg-background-secondary p-5 rounded-2xl border border-white/5 smooth-transition hover:border-white/10">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">

@@ -24,14 +24,19 @@ function toMovie(item) {
 }
 
 async function fetchJson(path, params = {}) {
-  const key = getKey()
-  if (!key) return null
-  const url = new URL(`${API_BASE}${path}`)
-  url.searchParams.set('api_key', key)
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
-  const res = await fetch(url.toString())
-  if (!res.ok) return null
-  return res.json()
+  try {
+    const key = getKey()
+    if (!key) return null
+    const url = new URL(`${API_BASE}${path}`)
+    url.searchParams.set('api_key', key)
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
+    const res = await fetch(url.toString())
+    if (!res.ok) return null
+    return res.json()
+  } catch (err) {
+    console.error('API Error:', err)
+    return null
+  }
 }
 
 export async function getTrending() {
@@ -68,34 +73,44 @@ export async function searchMulti(query) {
 }
 
 export async function getDetails(id, type = 'movie') {
-  const key = getKey()
-  if (!key) return null
-  const url = `${API_BASE}/${type}/${id}?api_key=${key}`
-  const res = await fetch(url)
-  if (!res.ok) return null
-  const item = await res.json()
-  const movie = toMovie(item)
-  return {
-    ...movie,
-    overview: item.overview || '',
-    genres: Array.isArray(item.genres) ? item.genres.map((g) => g.name) : [],
-    runtime: item.runtime || item.episode_run_time?.[0],
-    releaseDate: item.release_date || item.first_air_date,
-    media_type: type,
+  try {
+    const key = getKey()
+    if (!key) return null
+    const url = `${API_BASE}/${type}/${id}?api_key=${key}`
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const item = await res.json()
+    const movie = toMovie(item)
+    return {
+      ...movie,
+      overview: item.overview || '',
+      genres: Array.isArray(item.genres) ? item.genres.map((g) => g.name) : [],
+      runtime: item.runtime || item.episode_run_time?.[0],
+      releaseDate: item.release_date || item.first_air_date,
+      media_type: type,
+    }
+  } catch (err) {
+    console.error('API Error:', err)
+    return null
   }
 }
 
 export async function getTrailer(id, type = 'movie') {
-  const key = getKey()
-  if (!key) return null
-  const url = `${API_BASE}/${type}/${id}/videos?api_key=${key}`
-  const res = await fetch(url)
-  if (!res.ok) return null
-  const data = await res.json()
-  const vids = data?.results || []
-  const trailer = vids.find((v) => v.type === 'Trailer' && v.site === 'YouTube')
-  if (!trailer) return null
-  return `https://www.youtube.com/watch?v=${trailer.key}`
+  try {
+    const key = getKey()
+    if (!key) return null
+    const url = `${API_BASE}/${type}/${id}/videos?api_key=${key}`
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const data = await res.json()
+    const vids = data?.results || []
+    const trailer = vids.find((v) => v.type === 'Trailer' && v.site === 'YouTube')
+    if (!trailer) return null
+    return `https://www.youtube.com/watch?v=${trailer.key}`
+  } catch (err) {
+    console.error('API Error:', err)
+    return null
+  }
 }
 
 export function posterUrlFromPath(path) {

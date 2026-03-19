@@ -49,9 +49,9 @@ function Profile() {
   }
 
   const userStats = {
-    watched: watched.length,
-    reviews: userReviews.length,
-    favorites: favorites.length
+    watched: watched?.length || 0,
+    reviews: userReviews?.length || 0,
+    favorites: favorites?.length || 0
   }
 
   const getInitials = (name) => {
@@ -148,7 +148,7 @@ function Profile() {
                 <div className="text-surface-400 text-[10px] uppercase tracking-tighter font-medium">Watched</div>
               </div>
               <div className="rounded-lg border border-white/5 bg-background-primary p-3 text-center">
-                <div className="text-white text-lg font-semibold">{watchlist.length}</div>
+                <div className="text-white text-lg font-semibold">{watchlist?.length || 0}</div>
                 <div className="text-surface-400 text-[10px] uppercase tracking-tighter font-medium">Watchlist</div>
               </div>
               <div className="rounded-lg border border-white/5 bg-background-primary p-3 text-center">
@@ -171,13 +171,13 @@ function Profile() {
                 </svg>
               </Link>
             </div>
-            {favorites.length === 0 ? (
+            {favorites?.length === 0 ? (
               <div className="text-surface-400 text-center py-10 bg-background-primary/20 rounded-xl border border-dashed border-white/5">
                 No favourites yet.
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {favorites.slice(0, 4).map((movie) => (
+                {favorites?.slice(0, 4).map((movie) => (
                   <MovieCard 
                     key={movie.movieId} 
                     movie={mapMovie(movie)} 
@@ -199,13 +199,13 @@ function Profile() {
                 </svg>
               </Link>
             </div>
-            {watched.length === 0 ? (
+            {watched?.length === 0 ? (
               <div className="text-surface-400 text-center py-10 bg-background-primary/20 rounded-xl border border-dashed border-white/5">
                 No watched items yet.
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {watched.slice(0, 4).map((movie) => (
+                {watched?.slice(0, 4).map((movie) => (
                   <MovieCard 
                     key={movie.movieId} 
                     movie={mapMovie(movie)} 
@@ -227,13 +227,13 @@ function Profile() {
                 </svg>
               </Link>
             </div>
-            {watchlist.length === 0 ? (
+            {watchlist?.length === 0 ? (
               <div className="text-surface-400 text-center py-10 bg-background-primary/20 rounded-xl border border-dashed border-white/5">
                 Watchlist is empty.
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {watchlist.slice(0, 4).map((movie) => (
+                {watchlist?.slice(0, 4).map((movie) => (
                   <MovieCard 
                     key={movie.movieId} 
                     movie={mapMovie(movie)} 
@@ -255,13 +255,13 @@ function Profile() {
                 </svg>
               </Link>
             </div>
-            {userReviews.length === 0 ? (
+            {userReviews?.length === 0 ? (
               <div className="text-surface-300 text-center py-12 bg-background-primary/30 rounded-2xl border border-dashed border-white/10">
                 You haven't written any reviews yet.
               </div>
             ) : (
               <div className="space-y-4">
-                {userReviews.slice(0, 2).map((review) => (
+                {userReviews?.slice(0, 2).map((review) => (
                   <div key={review._id} className="bg-background-primary p-4 rounded-xl border border-white/5 flex gap-4 group hover:border-white/10 transition-all">
                     <div className="w-16 h-24 flex-shrink-0 rounded-lg overflow-hidden border border-white/5 shadow-lg">
                       <img 
