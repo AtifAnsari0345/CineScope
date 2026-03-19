@@ -13,6 +13,7 @@ import Login from './pages/Login.jsx'
 import Signup from './pages/Signup.jsx'
 import ProtectedRoute from './components/layout/ProtectedRoute.jsx'
 import { useAuth } from './context/AuthContext'
+import { Analytics } from '@vercel/analytics/react'
 
 /**
  * CineScope — Main Application Shell
@@ -80,6 +81,7 @@ function App() {
           </motion.div>
         </AnimatePresence>
       </main>
+      <Analytics />
     </div>
   )
 }
