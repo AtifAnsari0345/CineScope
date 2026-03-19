@@ -231,6 +231,16 @@ function Search() {
           })
 
           baseResults = fuzzyResults.length > 0 ? fuzzyResults : baseResults
+
+          if (!actor.trim()) {
+            const castResults = await getActorCreditsMedia(query)
+            if (castResults.length > 0) {
+              baseResults = castResults
+              if (alive) {
+                setSearchInfoMessage(`Showing cast results for "${query}"`)
+              }
+            }
+          }
         } else {
           if (actor.trim()) {
             baseResults = await getActorCreditsMedia(actor.trim())
