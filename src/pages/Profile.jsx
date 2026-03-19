@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import MovieCard from '../components/movie/MovieCard.jsx'
 import RatingStars from '../components/review/RatingStars.jsx'
@@ -37,6 +37,11 @@ function Profile() {
     watched: [],
     watchlist: []
   })
+  const selectedIdsRef = useRef(selectedIds)
+
+  useEffect(() => {
+    selectedIdsRef.current = selectedIds
+  }, [selectedIds])
 
   useEffect(() => {
     if (user) {
@@ -109,7 +114,7 @@ function Profile() {
   }
 
   const handleBulkDelete = async (section) => {
-    const ids = selectedIds[section]
+    const ids = [...(selectedIdsRef.current[section] || [])]
     if (!ids?.length) return
     if (section === 'watchlist') await removeMultipleFromWatchlist(ids)
     if (section === 'favorites') await removeMultipleFromFavorites(ids)

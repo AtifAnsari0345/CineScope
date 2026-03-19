@@ -1,9 +1,70 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import SearchBar from '../components/ui/SearchBar.jsx'
 import PosterGrid from '../components/movie/PosterGrid.jsx'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton.jsx'
 import { discoverByFilters, getActorCreditIds, searchMulti } from '../lib/tmdb.js'
+
+function FilterDropdown({ value, onChange, options, placeholder }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+  const selected = options.find((option) => String(option.value) === String(value))
+  const label = selected?.label || placeholder
+
+  useEffect(() => {
+    function handlePointerDown(event) {
+      if (!rootRef.current?.contains(event.target)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('touchstart', handlePointerDown)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('touchstart', handlePointerDown)
+    }
+  }, [])
+
+  return (
+    <div className="relative" ref={rootRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-full rounded-2xl border border-yellow-400/70 bg-gradient-to-br from-slate-900 to-slate-950 text-white px-4 py-3 text-sm font-semibold text-left smooth-transition hover:border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400/40 shadow-lg shadow-black/20"
+      >
+        <span className="truncate pr-8 block">{label}</span>
+        <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-yellow-300 smooth-transition ${open ? 'rotate-180' : ''}`}>
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+          </svg>
+        </span>
+      </button>
+      {open && (
+        <div className="absolute z-40 mt-2 w-full overflow-hidden rounded-2xl border border-yellow-400/35 bg-slate-900/95 backdrop-blur-md shadow-2xl shadow-black/40">
+          <div className="max-h-56 overflow-y-auto py-1">
+            {options.map((option) => (
+              <button
+                key={String(option.value) || option.label}
+                type="button"
+                onClick={() => {
+                  onChange(option.value)
+                  setOpen(false)
+                }}
+                className={`w-full px-4 py-2.5 text-left text-sm smooth-transition ${
+                  String(option.value) === String(value)
+                    ? 'bg-yellow-400/15 text-yellow-300'
+                    : 'text-white hover:bg-white/10'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function Search() {
   const navigate = useNavigate()
@@ -49,6 +110,24 @@ function Search() {
       { label: 'Korean', value: 'ko' },
       { label: 'Japanese', value: 'ja' },
       { label: 'Spanish', value: 'es' }
+    ],
+    []
+  )
+
+  const genreOptions = useMemo(
+    () => [
+      { label: 'All Genres', value: '' },
+      ...Object.entries(genres).map(([name, id]) => ({ label: name, value: String(id) }))
+    ],
+    [genres]
+  )
+
+  const ratingOptions = useMemo(
+    () => [
+      { label: 'All Ratings', value: '' },
+      { label: '7+', value: '7' },
+      { label: '8+', value: '8' },
+      { label: '9+', value: '9' }
     ],
     []
   )
@@ -313,17 +392,6 @@ function Search() {
     )
   }
 
-  const selectClass =
-    'w-full appearance-none rounded-xl border border-yellow-400/60 bg-slate-900/90 text-white px-4 py-3 pr-10 text-sm font-medium outline-none smooth-transition focus:border-yellow-300 focus:ring-2 focus:ring-yellow-400/40'
-
-  const selectArrow = (
-    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-yellow-300">
-      <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-        <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-      </svg>
-    </span>
-  )
-
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
@@ -372,35 +440,18 @@ function Search() {
         </div>
         <div className="mt-6 w-full rounded-2xl border border-yellow-400/25 bg-gradient-to-br from-slate-900/90 to-slate-950/90 p-4 sm:p-5 shadow-xl shadow-black/30">
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
-            <div className="relative">
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className={selectClass}
-              >
-                {languageOptions.map((option) => (
-                  <option key={option.value || 'all-language'} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              {selectArrow}
-            </div>
-            <div className="relative">
-              <select
-                value={genre}
-                onChange={(e) => setGenre(e.target.value)}
-                className={selectClass}
-              >
-                <option value="">All Genres</option>
-                {Object.entries(genres).map(([name, id]) => (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-              {selectArrow}
-            </div>
+            <FilterDropdown
+              value={language}
+              onChange={setLanguage}
+              options={languageOptions}
+              placeholder="Language"
+            />
+            <FilterDropdown
+              value={genre}
+              onChange={setGenre}
+              options={genreOptions}
+              placeholder="Genre"
+            />
             <input
               type="number"
               value={year}
@@ -410,19 +461,12 @@ function Search() {
               max="2100"
               className="w-full rounded-xl border border-yellow-400/60 bg-slate-900/90 text-white px-4 py-3 text-sm font-medium outline-none smooth-transition focus:border-yellow-300 focus:ring-2 focus:ring-yellow-400/40"
             />
-            <div className="relative">
-              <select
-                value={rating}
-                onChange={(e) => setRating(e.target.value)}
-                className={selectClass}
-              >
-                <option value="">All Ratings</option>
-                <option value="7">7+</option>
-                <option value="8">8+</option>
-                <option value="9">9+</option>
-              </select>
-              {selectArrow}
-            </div>
+            <FilterDropdown
+              value={rating}
+              onChange={setRating}
+              options={ratingOptions}
+              placeholder="Rating"
+            />
             <input
               type="text"
               value={actor}

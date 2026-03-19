@@ -91,8 +91,7 @@ export const WatchlistProvider = ({ children }) => {
           })
         )
       );
-      const idSet = new Set(movieIds.map(toId));
-      setWatchlist((prev) => prev.filter((m) => !idSet.has(toId(m.movieId))));
+      await fetchUserData();
     } catch (error) {
       console.error('Error removing from watchlist:', error);
     }
@@ -135,8 +134,7 @@ export const WatchlistProvider = ({ children }) => {
           })
         )
       );
-      const idSet = new Set(movieIds.map(toId));
-      setFavorites((prev) => prev.filter((m) => !idSet.has(toId(m.movieId))));
+      await fetchUserData();
     } catch (error) {
       console.error('Error removing from favorites:', error);
     }
@@ -185,8 +183,7 @@ export const WatchlistProvider = ({ children }) => {
           })
         )
       );
-      const idSet = new Set(movieIds.map(toId));
-      setWatched((prev) => prev.filter((m) => !idSet.has(toId(m.movieId))));
+      await fetchUserData();
     } catch (error) {
       console.error('Error removing from watched:', error);
     }
