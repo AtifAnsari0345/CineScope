@@ -8,18 +8,23 @@ function getKey() {
 
 function toMovie(item) {
   const release = item.release_date || item.first_air_date || ''
+  const title = item.title || item.name || ''
   const year = release ? Number(release.slice(0, 4)) : undefined
   return {
     id: item.id,
-    title: item.title || item.name || '',
+    title,
+    name: item.name || '',
     year,
     rating: Math.round((item.vote_average || 0) / 2), // 10 -> 5
     poster_path: item.poster_path || '',
     posterUrl: posterUrlFromPath(item.poster_path),
     vote_average: item.vote_average || 0,
-    release_date: item.release_date || item.first_air_date || '',
+    release_date: item.release_date || '',
+    first_air_date: item.first_air_date || '',
     media_type: item.media_type || (item.title ? 'movie' : 'tv'),
     popularity: item.popularity || 0,
+    original_language: item.original_language || '',
+    genre_ids: Array.isArray(item.genre_ids) ? item.genre_ids : [],
   }
 }
 
@@ -70,6 +75,18 @@ export async function searchMulti(query) {
     .filter((r) => !!r.poster_path && (r.media_type === 'movie' || r.media_type === 'tv'))
     .slice(0, 20)
   return filtered.map(toMovie)
+}
+
+export async function getActorCreditIds(actorName) {
+  const personData = await fetchJson('/search/person', { query: actorName })
+  const actorId = personData?.results?.[0]?.id
+  if (!actorId) return new Set()
+  const creditsData = await fetchJson(`/person/${actorId}/combined_credits`)
+  const castList = Array.isArray(creditsData?.cast) ? creditsData.cast : []
+  const ids = castList
+    .filter((item) => item?.id && (item.media_type === 'movie' || item.media_type === 'tv'))
+    .map((item) => item.id)
+  return new Set(ids)
 }
 
 export async function getDetails(id, type = 'movie') {
