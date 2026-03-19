@@ -7,13 +7,28 @@ import MoviePoster from '../components/movie/MoviePoster.jsx'
 import { useWatchlist } from '../context/WatchlistContext.jsx'
 import { useAuth } from '../context/AuthContext'
 import { motion } from 'framer-motion'
-import { getDetails, getPopular, getTrailer } from '../lib/tmdb.js'
+import { getDetails, getPopular, getTrailer, getCast } from '../lib/tmdb.js'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton.jsx'
 import { useOnlineStatus } from '../hooks/useOnlineStatus'
 import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL;
 console.log('API URL:', API_URL);
+
+const CastSkeleton = () => (
+  <div className="mt-6">
+    <h2 className="text-xl font-semibold text-white mb-4">Top Cast</h2>
+    <div className="flex overflow-x-auto gap-4 pb-2 scroll-x">
+      {[1, 2, 3, 4, 5, 6].map(i => (
+        <div key={i} className="min-w-[120px] text-center">
+          <LoadingSkeleton className="w-24 h-24 rounded-full mx-auto" />
+          <LoadingSkeleton className="h-4 w-20 mx-auto mt-3" />
+          <LoadingSkeleton className="h-3 w-16 mx-auto mt-2" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 function MovieDetails() {
   const { id } = useParams()
@@ -39,6 +54,8 @@ function MovieDetails() {
   const [related, setRelated] = useState([])
   const [loading, setLoading] = useState(true)
   const [trailerUrl, setTrailerUrl] = useState(null)
+  const [cast, setCast] = useState([])
+  const [castLoading, setCastLoading] = useState(true)
   
   // Review form state
   const [rating, setRating] = useState(0)
@@ -50,23 +67,30 @@ function MovieDetails() {
     ;(async () => {
       try {
         setLoading(true)
-        const [data, pop, trailer] = await Promise.all([
+        setCastLoading(true)
+        const [data, pop, trailer, castData] = await Promise.all([
           getDetails(movieId, mediaType),
           getPopular(),
           getTrailer(movieId, mediaType),
+          getCast(movieId, mediaType),
         ])
         if (!alive) return
         if (data) setMovie(data)
         if (Array.isArray(pop)) setRelated(pop.slice(0, 8))
         setTrailerUrl(trailer)
+        setCast(castData ? castData.slice(0, 6) : [])
       } catch (err) {
         console.error('API Error:', err)
         if (!alive) return
         setMovie(null)
         setRelated([])
         setTrailerUrl(null)
+        setCast([])
       } finally {
-        if (alive) setLoading(false)
+        if (alive) {
+          setLoading(false)
+          setCastLoading(false)
+        }
       }
     })()
 
@@ -226,6 +250,39 @@ function MovieDetails() {
                     {movie.releaseDate ? <span>Release: {movie.releaseDate}</span> : null}
                   </div>
                 </div>
+
+                {castLoading ? (
+                  <CastSkeleton />
+                ) : (
+                  cast.length > 0 && (
+                    <div className="mt-6">
+                      <h2 className="text-xl font-semibold text-white mb-4">Top Cast</h2>
+                      <div className="flex overflow-x-auto gap-4 pb-2 scroll-x scroll-smooth">
+                        {cast.map(actor => (
+                          <div key={actor.id} className="min-w-[120px] text-center group cursor-pointer">
+                            {actor.profile_path ? (
+                              <img
+                                src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
+                                alt={actor.name}
+                                className="w-24 h-24 object-cover rounded-full mx-auto group-hover:scale-105 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-24 h-24 rounded-full mx-auto bg-surface-700 flex items-center justify-center text-white font-bold text-2xl group-hover:scale-105 transition-transform duration-300">
+                                {actor.name.charAt(0)}
+                              </div>
+                            )}
+                            <p className="text-white text-sm font-medium mt-2 truncate">
+                              {actor.name}
+                            </p>
+                            <p className="text-surface-400 text-xs truncate mt-0.5">
+                              {actor.character}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                )}
 
                 {trailerUrl ? (
                   <motion.a

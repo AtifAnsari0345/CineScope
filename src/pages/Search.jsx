@@ -242,18 +242,15 @@ function Search() {
             }
           }
         } else {
-          if (actor.trim()) {
-            baseResults = await getActorCreditsMedia(actor.trim())
-          } else {
-            baseResults = await discoverByFilters({
-              contentType,
-              language,
-              genre,
-              year,
-              rating,
-              actor: ''
-            })
-          }
+          baseResults = await discoverByFilters({
+            contentType,
+            language,
+            genre,
+            year,
+            rating,
+            actor: actor.trim(),
+            sortBy
+          })
         }
 
         if (!alive) return
@@ -274,7 +271,7 @@ function Search() {
     return () => {
       alive = false
     }
-  }, [query, hasDiscoveryFilters, contentType, language, genre, year, rating, actor])
+  }, [query, hasDiscoveryFilters, contentType, language, genre, year, rating, actor, sortBy])
 
   useEffect(() => {
     if (!query) {

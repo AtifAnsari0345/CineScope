@@ -127,6 +127,7 @@ export async function discoverByFilters({
   year = '',
   rating = '',
   actor = '',
+  sortBy = 'popularity',
   page = 1
 } = {}) {
   const actorId = await getActorId(actor)
@@ -135,12 +136,16 @@ export async function discoverByFilters({
   if (genre) common.with_genres = genre
   if (rating) common['vote_average.gte'] = rating
 
+  let tmdbSort = 'popularity.desc'
+  if (sortBy === 'rating') tmdbSort = 'vote_average.desc'
+
   const tasks = []
 
   if (contentType !== 'tv') {
     const movieParams = { ...common }
     if (year) movieParams.primary_release_year = year
     if (actorId) movieParams.with_cast = actorId
+    movieParams.sort_by = sortBy === 'newest' ? 'primary_release_date.desc' : tmdbSort
     tasks.push(discoverList('/discover/movie', 'movie', movieParams))
   }
 
@@ -148,6 +153,7 @@ export async function discoverByFilters({
     const tvParams = { ...common }
     if (year) tvParams.first_air_date_year = year
     if (actorId) tvParams.with_people = actorId
+    tvParams.sort_by = sortBy === 'newest' ? 'first_air_date.desc' : tmdbSort
     tasks.push(discoverList('/discover/tv', 'tv', tvParams))
   }
 
@@ -200,6 +206,21 @@ export async function getTrailer(id, type = 'movie') {
   } catch (err) {
     console.error('API Error:', err)
     return null
+  }
+}
+
+export async function getCast(id, type = 'movie') {
+  try {
+    const key = getKey()
+    if (!key) return []
+    const url = `${API_BASE}/${type}/${id}/credits?api_key=${key}`
+    const res = await fetch(url)
+    if (!res.ok) return []
+    const data = await res.json()
+    return data.cast || []
+  } catch (err) {
+    console.error('API Error fetching cast:', err)
+    return []
   }
 }
 
