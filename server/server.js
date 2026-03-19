@@ -10,11 +10,23 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ 
-  origin: "*", 
-  methods: ["GET", "POST", "PUT", "DELETE"], 
-  credentials: true 
-})); 
+const allowedOrigins = [ 
+  "http://localhost:5173", 
+  "https://cinescope-mark1.vercel.app"
+]; 
+
+app.use( 
+  cors({ 
+    origin: function (origin, callback) { 
+      if (!origin || allowedOrigins.includes(origin)) { 
+        callback(null, true); 
+      } else { 
+        callback(null, true);
+      } 
+    }, 
+    credentials: true, 
+  }) 
+); 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -25,6 +37,10 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('MongoDB Connection Error:', err.message);
     process.exit(1); // Exit if cannot connect
   });
+
+app.get("/", (req, res) => { 
+  res.send("CineScope Backend Running"); 
+}); 
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
