@@ -7,7 +7,7 @@ import React from 'react';
  * built on top of the CineScope Design System.
  * 
  * @param {Object} props
- * @param {'primary' | 'secondary' | 'ghost'} [props.variant='primary'] - The visual style of the button.
+ * @param {'primary' | 'install' | 'secondary' | 'ghost'} [props.variant='primary'] - The visual style of the button.
  * @param {'sm' | 'md' | 'lg'} [props.size='md'] - The size of the button.
  * @param {boolean} [props.isLoading=false] - Whether the button is in a loading state.
  * @param {boolean} [props.isFullWidth=false] - Whether the button should take up the full width of its container.
@@ -53,6 +53,13 @@ const Button = React.forwardRef(({
       shadow-[0_0_15px_var(--btn-primary-shadow)] 
       hover:shadow-[0_0_25px_var(--btn-primary-shadow-hover)]
       border border-yellow-300/50
+    `,
+    install: `
+      bg-emerald-500 text-white
+      hover:bg-emerald-400
+      shadow-[0_4px_10px_rgba(16,185,129,0.16)]
+      hover:shadow-[0_6px_14px_rgba(16,185,129,0.2)]
+      border border-emerald-300/60
     `,
     secondary: `
       bg-white/5 text-white 

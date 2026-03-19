@@ -34,11 +34,11 @@ function Navbar() {
           <div className="hidden sm:flex items-center gap-1">
             {showInstall && (
               <Button
-                variant="primary"
+                variant="install"
                 size="sm"
                 onClick={installApp}
                 isLoading={isInstalling}
-                className="mr-3 font-sans font-semibold tracking-[0.06em] text-[13px] bg-emerald-500 hover:bg-emerald-400 text-white border-emerald-300/60 shadow-[0_4px_10px_rgba(16,185,129,0.16)] hover:shadow-[0_6px_14px_rgba(16,185,129,0.2)]"
+                className="mr-3 font-sans font-semibold normal-case tracking-[0.02em] text-[13px]"
                 icon={
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -47,7 +47,7 @@ function Navbar() {
                   </svg>
                 }
               >
-                {isInstalling ? 'INSTALLING' : 'INSTALL'}
+                {isInstalling ? 'Installing' : 'Install'}
               </Button>
             )}
             {user && (
@@ -103,12 +103,12 @@ function Navbar() {
           <div className="sm:hidden py-4 space-y-2 px-4 border-t border-white/5 bg-background-primary/95 backdrop-blur-xl">
             {showInstall && (
               <Button
-                variant="primary"
+                variant="install"
                 size="md"
                 isFullWidth
                 onClick={() => { installApp(); setOpen(false); }}
                 isLoading={isInstalling}
-                className="font-sans font-semibold tracking-[0.06em] text-[15px] min-h-[48px] bg-emerald-500 hover:bg-emerald-400 text-white border-emerald-300/60 shadow-[0_5px_12px_rgba(16,185,129,0.18)] hover:shadow-[0_7px_16px_rgba(16,185,129,0.24)]"
+                className="font-sans font-semibold normal-case tracking-[0.02em] text-[15px] min-h-[48px]"
                 icon={
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -117,7 +117,7 @@ function Navbar() {
                   </svg>
                 }
               >
-                {isInstalling ? 'INSTALLING' : 'INSTALL'}
+                {isInstalling ? 'Installing' : 'Install'}
               </Button>
             )}
             {user ? (
