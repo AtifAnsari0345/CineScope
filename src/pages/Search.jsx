@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import SearchBar from '../components/ui/SearchBar.jsx'
 import PosterGrid from '../components/movie/PosterGrid.jsx'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton.jsx'
-import { discoverByFilters, getActorCreditIds, searchMulti } from '../lib/tmdb.js'
+import { discoverByFilters, getActorCreditIds, getActorCreditsMedia, searchMulti } from '../lib/tmdb.js'
 
 function FilterDropdown({ value, onChange, options, placeholder }) {
   const [open, setOpen] = useState(false)
@@ -232,27 +232,16 @@ function Search() {
 
           baseResults = fuzzyResults.length > 0 ? fuzzyResults : baseResults
         } else {
-          baseResults = await discoverByFilters({
-            contentType,
-            language,
-            genre,
-            year,
-            rating,
-            actor
-          })
-          if (!baseResults.length && hasDiscoveryFilters) {
-            setSearchInfoMessage('No exact results found. Showing similar results...')
-            const fallbackGenre = ''
-            const fallbackRating = ''
-            const fallbackYear = ''
-            const fallbackActor = actor.trim() ? actor.trim().split(/\s+/)[0] : ''
+          if (actor.trim()) {
+            baseResults = await getActorCreditsMedia(actor.trim())
+          } else {
             baseResults = await discoverByFilters({
               contentType,
               language,
-              genre: fallbackGenre,
-              year: fallbackYear,
-              rating: fallbackRating,
-              actor: fallbackActor
+              genre,
+              year,
+              rating,
+              actor: ''
             })
           }
         }
@@ -453,12 +442,11 @@ function Search() {
               placeholder="Genre"
             />
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={year}
-              onChange={(e) => setYear(e.target.value)}
+              onChange={(e) => setYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
               placeholder="Year"
-              min="1900"
-              max="2100"
               className="w-full rounded-xl border border-yellow-400/60 bg-slate-900/90 text-white px-4 py-3 text-sm font-medium outline-none smooth-transition focus:border-yellow-300 focus:ring-2 focus:ring-yellow-400/40"
             />
             <FilterDropdown

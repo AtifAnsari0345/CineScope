@@ -95,6 +95,24 @@ export async function getActorId(actorName) {
   return personData?.results?.[0]?.id || null
 }
 
+export async function getActorCreditsMedia(actorName) {
+  const actorId = await getActorId(actorName)
+  if (!actorId) return []
+  const creditsData = await fetchJson(`/person/${actorId}/combined_credits`)
+  const castList = Array.isArray(creditsData?.cast) ? creditsData.cast : []
+  const seen = new Set()
+  const mapped = castList
+    .filter((item) => item?.id && !!item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'))
+    .map((item) => toMovie(item))
+    .filter((item) => {
+      const key = `${item.media_type}-${item.id}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  return mapped
+}
+
 async function discoverList(path, mediaType, params = {}) {
   const data = await fetchJson(path, params)
   if (!data || !data.results) return []
