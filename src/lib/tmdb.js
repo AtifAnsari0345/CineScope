@@ -89,6 +89,61 @@ export async function getActorCreditIds(actorName) {
   return new Set(ids)
 }
 
+export async function getActorId(actorName) {
+  if (!actorName || !actorName.trim()) return null
+  const personData = await fetchJson('/search/person', { query: actorName.trim() })
+  return personData?.results?.[0]?.id || null
+}
+
+async function discoverList(path, mediaType, params = {}) {
+  const data = await fetchJson(path, params)
+  if (!data || !data.results) return []
+  const filtered = data.results.filter((item) => !!item.poster_path)
+  return filtered.map((item) => toMovie({ ...item, media_type: mediaType }))
+}
+
+export async function discoverByFilters({
+  contentType = 'both',
+  language = '',
+  genre = '',
+  year = '',
+  rating = '',
+  actor = '',
+  page = 1
+} = {}) {
+  const actorId = await getActorId(actor)
+  const common = { page }
+  if (language) common.with_original_language = language
+  if (genre) common.with_genres = genre
+  if (rating) common['vote_average.gte'] = rating
+
+  const tasks = []
+
+  if (contentType !== 'tv') {
+    const movieParams = { ...common }
+    if (year) movieParams.primary_release_year = year
+    if (actorId) movieParams.with_cast = actorId
+    tasks.push(discoverList('/discover/movie', 'movie', movieParams))
+  }
+
+  if (contentType !== 'movie') {
+    const tvParams = { ...common }
+    if (year) tvParams.first_air_date_year = year
+    if (actorId) tvParams.with_people = actorId
+    tasks.push(discoverList('/discover/tv', 'tv', tvParams))
+  }
+
+  const chunks = await Promise.all(tasks)
+  const merged = chunks.flat()
+  const seen = new Set()
+  return merged.filter((item) => {
+    const key = `${item.media_type}-${item.id}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 export async function getDetails(id, type = 'movie') {
   try {
     const key = getKey()

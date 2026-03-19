@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import SearchBar from '../components/ui/SearchBar.jsx'
 import PosterGrid from '../components/movie/PosterGrid.jsx'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton.jsx'
-import { getActorCreditIds, searchMulti } from '../lib/tmdb.js'
+import { discoverByFilters, getActorCreditIds, searchMulti } from '../lib/tmdb.js'
 
 function Search() {
   const navigate = useNavigate()
@@ -23,6 +23,10 @@ function Search() {
   const [year, setYear] = useState('')
   const [rating, setRating] = useState('')
   const [actor, setActor] = useState('')
+  const hasDiscoveryFilters = useMemo(
+    () => Boolean(language || genre || year || rating || actor.trim() || contentType !== 'both'),
+    [language, genre, year, rating, actor, contentType]
+  )
 
   const genres = useMemo(
     () => ({
@@ -105,45 +109,78 @@ function Search() {
     let alive = true
 
     const fetchMovies = async () => {
-      if (!query) {
+      if (!query && !hasDiscoveryFilters) {
+        setRawResults([])
+        setResults([])
+        setSuggestions([])
+        setSearchInfoMessage('')
         setLoading(false)
         return
       }
       setLoading(true)
       setSearchInfoMessage('')
       try {
-        const primary = await searchMulti(query)
-        let baseResults = (primary || []).filter((item) => {
-          const title = getDisplayTitle(item)
-          return title && item.poster_path
-        })
+        let baseResults = []
 
-        if (baseResults.length === 0) {
-          const fallbackQuery = getRelaxedQuery(query)
-          if (fallbackQuery && fallbackQuery.toLowerCase() !== query.toLowerCase()) {
-            const fallback = await searchMulti(fallbackQuery)
-            const fallbackResults = (fallback || []).filter((item) => {
-              const title = getDisplayTitle(item)
-              return title && item.poster_path
-            })
-            if (fallbackResults.length > 0) {
-              baseResults = fallbackResults
-              if (alive) {
-                setSearchInfoMessage('No exact results found. Showing similar results...')
+        if (query) {
+          const primary = await searchMulti(query)
+          baseResults = (primary || []).filter((item) => {
+            const title = getDisplayTitle(item)
+            return title && item.poster_path
+          })
+
+          if (baseResults.length === 0) {
+            const fallbackQuery = getRelaxedQuery(query)
+            if (fallbackQuery && fallbackQuery.toLowerCase() !== query.toLowerCase()) {
+              const fallback = await searchMulti(fallbackQuery)
+              const fallbackResults = (fallback || []).filter((item) => {
+                const title = getDisplayTitle(item)
+                return title && item.poster_path
+              })
+              if (fallbackResults.length > 0) {
+                baseResults = fallbackResults
+                if (alive) {
+                  setSearchInfoMessage('No exact results found. Showing similar results...')
+                }
               }
             }
           }
+
+          const fuzzyResults = baseResults.filter((item) => {
+            const title = getDisplayTitle(item)
+            return isMatch(title, query)
+          })
+
+          baseResults = fuzzyResults.length > 0 ? fuzzyResults : baseResults
+        } else {
+          baseResults = await discoverByFilters({
+            contentType,
+            language,
+            genre,
+            year,
+            rating,
+            actor
+          })
+          if (!baseResults.length && hasDiscoveryFilters) {
+            setSearchInfoMessage('No exact results found. Showing similar results...')
+            const fallbackGenre = ''
+            const fallbackRating = ''
+            const fallbackYear = ''
+            const fallbackActor = actor.trim() ? actor.trim().split(/\s+/)[0] : ''
+            baseResults = await discoverByFilters({
+              contentType,
+              language,
+              genre: fallbackGenre,
+              year: fallbackYear,
+              rating: fallbackRating,
+              actor: fallbackActor
+            })
+          }
         }
 
-        const fuzzyResults = baseResults.filter((item) => {
-          const title = getDisplayTitle(item)
-          return isMatch(title, query)
-        })
-
-        const selected = fuzzyResults.length > 0 ? fuzzyResults : baseResults
         if (!alive) return
-        setRawResults(selected)
-        setSuggestions(selected.slice(0, 5))
+        setRawResults(baseResults)
+        setSuggestions(query ? baseResults.slice(0, 5) : [])
       } catch (err) {
         console.error('API Error:', err)
         if (!alive) return
@@ -159,21 +196,25 @@ function Search() {
     return () => {
       alive = false
     }
-  }, [query])
+  }, [query, hasDiscoveryFilters, contentType, language, genre, year, rating, actor])
 
   useEffect(() => {
+    if (!query) {
+      setShowSuggestions(false)
+      return
+    }
     if (!inputQuery.trim()) {
       setShowSuggestions(false)
     } else if (suggestions.length > 0) {
       setShowSuggestions(true)
     }
-  }, [inputQuery, suggestions])
+  }, [query, inputQuery, suggestions])
 
   useEffect(() => {
-    if (!query) {
+    if (!query && !hasDiscoveryFilters) {
       setLoading(false)
     }
-  }, [query])
+  }, [query, hasDiscoveryFilters])
 
   useEffect(() => {
     let alive = true
@@ -199,7 +240,7 @@ function Search() {
         filtered = filtered.filter((item) => item.vote_average >= Number(rating))
       }
 
-      if (actor.trim()) {
+      if (actor.trim() && query) {
         setIsApplyingFilters(true)
         const actorMovieIds = await getActorCreditIds(actor.trim())
         if (!alive) return
@@ -229,7 +270,7 @@ function Search() {
 
       if (alive) {
         setResults(filtered)
-        if (actor.trim()) setIsApplyingFilters(false)
+        if (actor.trim() && query) setIsApplyingFilters(false)
       }
     }
 
@@ -237,20 +278,21 @@ function Search() {
     return () => {
       alive = false
     }
-  }, [rawResults, language, genre, year, rating, actor, contentType, sortBy])
+  }, [rawResults, language, genre, year, rating, actor, contentType, sortBy, query])
 
   const activeFilterSummary = useMemo(() => {
-    if (!query) return ''
+    if (!query && !hasDiscoveryFilters) return ''
     const languageLabel = languageOptions.find((option) => option.value === language)?.label
     const genreLabel = Object.keys(genres).find((key) => String(genres[key]) === String(genre))
-    const segments = [`Showing results for "${query}"`]
+    const segments = [query ? `Showing results for "${query}"` : 'Showing discovered results']
     if (language) segments.push(languageLabel || language)
     if (genre) segments.push(genreLabel || `Genre ${genre}`)
     if (year) segments.push(`Year ${year}`)
     if (rating) segments.push(`Rating ${rating}+`)
     if (actor.trim()) segments.push(`Actor ${actor.trim()}`)
+    if (contentType !== 'both') segments.push(contentType === 'tv' ? 'TV Series' : 'Movies')
     return segments.join(' | ')
-  }, [query, language, genre, year, rating, actor, genres, languageOptions])
+  }, [query, hasDiscoveryFilters, language, genre, year, rating, actor, contentType, genres, languageOptions])
 
   const skeletons = useMemo(() => Array.from({ length: 10 }), [])
 
@@ -271,6 +313,17 @@ function Search() {
     )
   }
 
+  const selectClass =
+    'w-full appearance-none rounded-xl border border-yellow-400/60 bg-slate-900/90 text-white px-4 py-3 pr-10 text-sm font-medium outline-none smooth-transition focus:border-yellow-300 focus:ring-2 focus:ring-yellow-400/40'
+
+  const selectArrow = (
+    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-yellow-300">
+      <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+        <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+      </svg>
+    </span>
+  )
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
@@ -281,7 +334,7 @@ function Search() {
             value={inputQuery}
             onChange={setInputQuery}
             onFocus={() => {
-              if (suggestions.length > 0) setShowSuggestions(true)
+              if (suggestions.length > 0 && query) setShowSuggestions(true)
             }}
             onBlur={() => {
               setTimeout(() => setShowSuggestions(false), 120)
@@ -317,31 +370,37 @@ function Search() {
             </div>
           )}
         </div>
-        <div className="mt-6 w-full bg-background-secondary/40 border border-yellow-400/30 rounded-xl p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="bg-gray-900 border border-yellow-400 text-white rounded-md px-3 py-2 w-full"
-            >
-              {languageOptions.map((option) => (
-                <option key={option.value || 'all-language'} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              className="bg-gray-900 border border-yellow-400 text-white rounded-md px-3 py-2 w-full"
-            >
-              <option value="">All Genres</option>
-              {Object.entries(genres).map(([name, id]) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </select>
+        <div className="mt-6 w-full rounded-2xl border border-yellow-400/25 bg-gradient-to-br from-slate-900/90 to-slate-950/90 p-4 sm:p-5 shadow-xl shadow-black/30">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+            <div className="relative">
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className={selectClass}
+              >
+                {languageOptions.map((option) => (
+                  <option key={option.value || 'all-language'} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {selectArrow}
+            </div>
+            <div className="relative">
+              <select
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                className={selectClass}
+              >
+                <option value="">All Genres</option>
+                {Object.entries(genres).map(([name, id]) => (
+                  <option key={id} value={id}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              {selectArrow}
+            </div>
             <input
               type="number"
               value={year}
@@ -349,38 +408,42 @@ function Search() {
               placeholder="Year"
               min="1900"
               max="2100"
-              className="bg-gray-900 border border-yellow-400 text-white rounded-md px-3 py-2 w-full"
+              className="w-full rounded-xl border border-yellow-400/60 bg-slate-900/90 text-white px-4 py-3 text-sm font-medium outline-none smooth-transition focus:border-yellow-300 focus:ring-2 focus:ring-yellow-400/40"
             />
-            <select
-              value={rating}
-              onChange={(e) => setRating(e.target.value)}
-              className="bg-gray-900 border border-yellow-400 text-white rounded-md px-3 py-2 w-full"
-            >
-              <option value="">All Ratings</option>
-              <option value="7">7+</option>
-              <option value="8">8+</option>
-              <option value="9">9+</option>
-            </select>
+            <div className="relative">
+              <select
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+                className={selectClass}
+              >
+                <option value="">All Ratings</option>
+                <option value="7">7+</option>
+                <option value="8">8+</option>
+                <option value="9">9+</option>
+              </select>
+              {selectArrow}
+            </div>
             <input
               type="text"
               value={actor}
               onChange={(e) => setActor(e.target.value)}
               placeholder="Actor"
-              className="bg-gray-900 border border-yellow-400 text-white rounded-md px-3 py-2 w-full"
+              className="w-full rounded-xl border border-yellow-400/60 bg-slate-900/90 text-white px-4 py-3 text-sm font-medium outline-none smooth-transition focus:border-yellow-300 focus:ring-2 focus:ring-yellow-400/40"
             />
           </div>
-          <div className="mt-3 flex justify-end">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="text-surface-400 text-xs uppercase tracking-[0.18em]">Smart Filters</div>
             <button
               type="button"
               onClick={clearFilters}
-              className="bg-gray-900 border border-yellow-400 text-white rounded-md px-3 py-2 text-sm hover:bg-yellow-400 hover:text-black smooth-transition"
+              className="self-start sm:self-auto rounded-xl border border-yellow-400/80 bg-slate-900/80 px-4 py-2.5 text-white text-sm font-semibold hover:bg-yellow-400 hover:text-black smooth-transition"
             >
               Clear Filters
             </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-8 bg-background-secondary/50 p-4 rounded-xl border border-white/5">
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-6 bg-background-secondary/50 p-4 rounded-xl border border-white/5">
           <div className="flex flex-col items-start gap-1.5">
             <label className="text-xs font-semibold text-surface-400 uppercase tracking-wider px-1">Content Type</label>
             <div className="flex bg-background-primary rounded-lg p-1 border border-white/5">
@@ -445,7 +508,7 @@ function Search() {
         </div>
       ) : (
         <>
-          {query && results.length === 0 ? (
+          {(query || hasDiscoveryFilters) && results.length === 0 ? (
             <div className="text-center py-20 bg-background-secondary/30 rounded-2xl border border-dashed border-white/10">
               <p className="text-surface-400 text-lg italic">No results found. Try different keywords.</p>
             </div>
