@@ -34,6 +34,7 @@ function App() {
             src="/logo.png" 
             alt="CineScope" 
             className="h-20 w-20 object-contain rounded-2xl shadow-2xl shadow-black/60" 
+            loading="lazy"
           />
         </motion.div>
         <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">

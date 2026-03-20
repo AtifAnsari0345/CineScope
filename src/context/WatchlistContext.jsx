@@ -19,6 +19,21 @@ export const WatchlistProvider = ({ children }) => {
   const { user, token } = useAuth();
 
   const toId = (value) => String(value);
+  const normalizeMovieData = (movie = {}) => ({
+    id: movie?.id,
+    title: movie?.title || movie?.name || 'Untitled',
+    poster_path: movie?.poster_path || '',
+    vote_average: Number(movie?.vote_average ?? movie?.rating ?? 0) || 0,
+    media_type: movie?.media_type || 'movie',
+    year: movie?.year
+  });
+
+  const setIfChanged = (setter, nextValue) => {
+    setter((prevValue) => {
+      if (JSON.stringify(prevValue) === JSON.stringify(nextValue)) return prevValue;
+      return nextValue;
+    });
+  };
 
   useEffect(() => {
     if (user && token) {
@@ -37,10 +52,10 @@ export const WatchlistProvider = ({ children }) => {
       const res = await axios.get(`${API_URL}/user/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setWatchlist(res.data.watchlist || []);
-      setFavorites(res.data.favorites || []);
-      setWatched(res.data.watched || []);
-      setUserReviews(res.data.reviews || []);
+      setIfChanged(setWatchlist, res.data.watchlist || []);
+      setIfChanged(setFavorites, res.data.favorites || []);
+      setIfChanged(setWatched, res.data.watched || []);
+      setIfChanged(setUserReviews, res.data.reviews || []);
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -50,20 +65,22 @@ export const WatchlistProvider = ({ children }) => {
 
   const addToWatchlist = async (movie) => {
     if (!user) return;
-    const exists = watchlist.some(m => toId(m.movieId) === toId(movie?.id));
+    const movieData = normalizeMovieData(movie);
+    if (!movieData.id) return;
+    const exists = watchlist.some(m => toId(m.movieId) === toId(movieData.id));
     if (exists) return;
     try {
       const res = await axios.post(`${API_URL}/user/watchlist/add`, {
-        movieId: movie.id,
-        title: movie.title,
-        poster: movie.poster_path,
-        media_type: movie.media_type,
-        year: movie.year,
-        rating: movie.vote_average
+        movieId: movieData.id,
+        title: movieData.title,
+        poster: movieData.poster_path,
+        media_type: movieData.media_type,
+        year: movieData.year,
+        rating: movieData.vote_average
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setWatchlist(res.data);
+      setIfChanged(setWatchlist, res.data);
     } catch (error) {
       console.error('Error adding to watchlist:', error);
     }
@@ -75,7 +92,7 @@ export const WatchlistProvider = ({ children }) => {
       const res = await axios.delete(`${API_URL}/user/watchlist/remove/${movieId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setWatchlist(res.data);
+      setIfChanged(setWatchlist, res.data);
     } catch (error) {
       console.error('Error removing from watchlist:', error);
     }
@@ -99,25 +116,27 @@ export const WatchlistProvider = ({ children }) => {
 
   const toggleFavorite = async (movie) => {
     if (!user) return;
-    const isFav = favorites.some(m => toId(m.movieId) === toId(movie?.id));
+    const movieData = normalizeMovieData(movie);
+    if (!movieData.id) return;
+    const isFav = favorites.some(m => toId(m.movieId) === toId(movieData.id));
     try {
       if (isFav) {
-        const res = await axios.delete(`${API_URL}/user/favorites/remove/${movie.id}`, {
+        const res = await axios.delete(`${API_URL}/user/favorites/remove/${movieData.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setFavorites(res.data);
+        setIfChanged(setFavorites, res.data);
       } else {
         const res = await axios.post(`${API_URL}/user/favorites/add`, {
-          movieId: movie.id,
-          title: movie.title,
-          poster: movie.poster_path,
-          media_type: movie.media_type,
-          year: movie.year,
-          rating: movie.vote_average
+          movieId: movieData.id,
+          title: movieData.title,
+          poster: movieData.poster_path,
+          media_type: movieData.media_type,
+          year: movieData.year,
+          rating: movieData.vote_average
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setFavorites(res.data);
+        setIfChanged(setFavorites, res.data);
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -142,20 +161,22 @@ export const WatchlistProvider = ({ children }) => {
 
   const addToWatched = async (movie) => {
     if (!user) return;
-    const exists = watched.some(m => toId(m.movieId) === toId(movie?.id));
+    const movieData = normalizeMovieData(movie);
+    if (!movieData.id) return;
+    const exists = watched.some(m => toId(m.movieId) === toId(movieData.id));
     if (exists) return;
     try {
       const res = await axios.post(`${API_URL}/user/watched/add`, {
-        movieId: movie.id,
-        title: movie.title,
-        poster: movie.poster_path,
-        media_type: movie.media_type,
-        year: movie.year,
-        rating: movie.vote_average
+        movieId: movieData.id,
+        title: movieData.title,
+        poster: movieData.poster_path,
+        media_type: movieData.media_type,
+        year: movieData.year,
+        rating: movieData.vote_average
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setWatched(res.data);
+      setIfChanged(setWatched, res.data);
     } catch (error) {
       console.error('Error adding to watched:', error);
     }
@@ -167,7 +188,7 @@ export const WatchlistProvider = ({ children }) => {
       const res = await axios.delete(`${API_URL}/user/watched/remove/${movieId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setWatched(res.data);
+      setIfChanged(setWatched, res.data);
     } catch (error) {
       console.error('Error removing from watched:', error);
     }
@@ -195,7 +216,7 @@ export const WatchlistProvider = ({ children }) => {
       const res = await axios.post(`${API_URL}/user/review/add`, reviewData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setUserReviews(res.data);
+      setIfChanged(setUserReviews, res.data);
       return { success: true };
     } catch (error) {
       console.error('Error adding review:', error);
@@ -209,7 +230,7 @@ export const WatchlistProvider = ({ children }) => {
       const res = await axios.delete(`${API_URL}/user/review/delete/${reviewId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setUserReviews(res.data);
+      setIfChanged(setUserReviews, res.data);
     } catch (error) {
       console.error('Error deleting review:', error);
     }

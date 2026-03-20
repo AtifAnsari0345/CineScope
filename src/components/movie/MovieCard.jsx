@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import MoviePoster from './MoviePoster.jsx'
 import RatingStars from '../review/RatingStars.jsx'
@@ -5,7 +6,9 @@ import { motion } from 'framer-motion'
 import { posterUrlFromPath } from '../../lib/tmdb.js'
 
 function MovieCard({ movie, onRemove, className = '' }) {
-  const { title, year, rating = 0, media_type } = movie || {}
+  const { title, year, media_type } = movie || {}
+  const rating = Number(movie?.vote_average ?? movie?.rating ?? 0) || 0
+  const starRating = rating > 5 ? rating / 2 : rating
   const posterUrl = movie?.posterUrl || posterUrlFromPath(movie?.poster_path)
   return (
     <motion.div
@@ -54,7 +57,11 @@ function MovieCard({ movie, onRemove, className = '' }) {
           <div className="flex flex-col gap-2 pb-2">
             <span className="text-surface-400 text-xs font-medium uppercase tracking-wider">{year}</span>
             <div className="flex items-center gap-1 min-h-[24px] overflow-visible">
-              <RatingStars value={Math.round(rating)} readOnly size={14} className="flex flex-nowrap items-center gap-1 overflow-visible" />
+              {starRating > 0 ? (
+                <RatingStars value={Math.round(starRating)} readOnly size={14} className="flex flex-nowrap items-center gap-1 overflow-visible" />
+              ) : (
+                <span className="text-gray-400 text-sm">No rating</span>
+              )}
             </div>
           </div>
         </div>
@@ -63,4 +70,4 @@ function MovieCard({ movie, onRemove, className = '' }) {
   )
 }
 
-export default MovieCard
+export default memo(MovieCard)

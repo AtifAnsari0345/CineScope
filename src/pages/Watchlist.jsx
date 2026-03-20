@@ -10,7 +10,7 @@ function Watchlist() {
     poster_path: m.poster,
     media_type: m.media_type,
     year: m.year,
-    vote_average: m.rating * 2
+    vote_average: Number(m?.rating ?? m?.vote_average ?? 0) || 0
   })) || []
 
   return (

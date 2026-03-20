@@ -1,5 +1,5 @@
 const API_BASE = 'https://api.themoviedb.org/3'
-const IMG_BASE = 'https://image.tmdb.org/t/p/w500'
+const IMG_BASE = 'https://image.tmdb.org/t/p/w342'
 const PLACEHOLDER = 'https://via.placeholder.com/500x750?text=No+Poster'
 
 function getKey() {

@@ -25,6 +25,7 @@ function Navbar() {
               src="/logo.png" 
               alt="CineScope Logo" 
               className="h-8 w-8 object-contain rounded-xl overflow-hidden shadow-lg shadow-black/40 smooth-transition group-hover:scale-110"
+              loading="lazy"
             />
             <span className="font-accent text-2xl tracking-wide text-yellow-400 smooth-transition hover:text-yellow-300">
               CineScope

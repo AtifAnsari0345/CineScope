@@ -11,6 +11,7 @@ function ReviewCard({ username = 'User', rating = 0, text = '', movieTitle, movi
               src={posterUrlFromPath(moviePoster)} 
               alt={movieTitle} 
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           </div>
           <div className="flex-grow min-w-0">
@@ -38,4 +39,3 @@ function ReviewCard({ username = 'User', rating = 0, text = '', movieTitle, movi
 }
 
 export default ReviewCard
-

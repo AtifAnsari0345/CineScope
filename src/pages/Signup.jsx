@@ -46,6 +46,7 @@ const Signup = () => {
               src="/logo.png" 
               alt="CineScope Logo" 
               className="h-16 w-16 object-contain mb-4 rounded-2xl overflow-hidden shadow-2xl shadow-black/60 smooth-transition hover:scale-110"
+              loading="lazy"
             />
           </Link>
           <h2 className="font-heading text-3xl text-white text-center">Join CineScope</h2>

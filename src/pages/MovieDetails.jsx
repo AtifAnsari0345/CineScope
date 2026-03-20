@@ -265,6 +265,7 @@ function MovieDetails() {
                                 src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
                                 alt={actor.name}
                                 className="w-24 h-24 object-cover rounded-full mx-auto group-hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
                               />
                             ) : (
                               <div className="w-24 h-24 rounded-full mx-auto bg-surface-700 flex items-center justify-center text-white font-bold text-2xl group-hover:scale-105 transition-transform duration-300">
@@ -348,7 +349,7 @@ function MovieDetails() {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
                         {review.userAvatar ? (
-                          <img src={review.userAvatar} alt={review.userName} className="w-10 h-10 rounded-full object-cover border border-white/10" />
+                          <img src={review.userAvatar} alt={review.userName} className="w-10 h-10 rounded-full object-cover border border-white/10" loading="lazy" />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-yellow-400/20 flex items-center justify-center text-yellow-400 font-bold">
                             {getInitials(review.userName)}

@@ -87,7 +87,7 @@ function Profile() {
     poster_path: m.poster,
     media_type: m.media_type,
     year: m.year,
-    vote_average: m.rating * 2 // back to 10 scale
+    vote_average: Number(m?.rating ?? m?.vote_average ?? 0) || 0
   })
 
   const toggleSectionMode = (section) => {
@@ -139,6 +139,7 @@ function Profile() {
                     src={avatarDisplay}
                     alt={editForm.username}
                     className="h-16 w-16 rounded-full border-2 border-yellow-400 shadow-lg object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <div>
@@ -171,6 +172,7 @@ function Profile() {
                       src={avatarDisplay}
                       alt={user?.name}
                       className="h-16 w-16 rounded-full border border-white/10 shadow-lg object-cover"
+                      loading="lazy"
                     />
                   </div>
                   <div>
@@ -451,6 +453,7 @@ function Profile() {
                         src={posterUrlFromPath(review.moviePoster)} 
                         alt={review.movieTitle} 
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                     <div className="flex-grow min-w-0">

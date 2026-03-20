@@ -14,6 +14,7 @@ const Footer = () => {
                 src="/logo.png" 
                 alt="CineScope Logo" 
                 className="h-8 w-8 object-contain rounded-lg shadow-xl"
+                loading="lazy"
               />
               <span className="font-accent text-2xl tracking-wider text-white">
                 Cine<span className="text-yellow-400">Scope</span>

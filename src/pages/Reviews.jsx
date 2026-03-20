@@ -21,6 +21,7 @@ function Reviews() {
                   src={posterUrlFromPath(review.moviePoster)} 
                   alt={review.movieTitle} 
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
               <div className="flex-grow min-w-0">
